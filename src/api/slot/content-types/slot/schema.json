@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "slots",
+  "info": {
+    "singularName": "slot",
+    "pluralName": "slots",
+    "displayName": "Slot",
+    "description": "Parking slots"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "available",
+        "occupied"
+      ],
+      "required": true,
+      "default": "available"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "standard",
+        "premium"
+      ],
+      "required": true,
+      "default": "standard"
+    },
+    "coordinates": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.coordinates",
+      "required": true
+    },
+    "location": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::location.location",
+      "inversedBy": "slots"
+    }
+  }
+} 
