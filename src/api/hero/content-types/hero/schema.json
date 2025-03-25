@@ -1,5 +1,5 @@
 {
-  "kind": "collectionType",
+  "kind": "singleType",
   "collectionName": "heroes",
   "info": {
     "singularName": "hero",
@@ -20,9 +20,7 @@
       "required": true
     },
     "buttons": {
-      "type": "component",
-      "repeatable": true,
-      "component": "common.button",
+      "type": "json",
       "required": true
     },
     "image": {

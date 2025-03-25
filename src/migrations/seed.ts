@@ -138,6 +138,53 @@ export default async (strapi: any) => {
       totalSlots: 100,
       availableSlots: 50,
       pricePerHour: 5,
+      openHours: [
+        {
+            day: 'monday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'tuesday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'wednesday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'thursday',
+            open: '08:00',
+            close: '18:00',
+        },
+        {
+            day: 'friday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'saturday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'sunday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        }
+      ],
+      coordinates: {
+        lat: 37.7749,
+        lng: -122.4194
+      },
       publishedAt: new Date()
     },
     {
@@ -146,6 +193,53 @@ export default async (strapi: any) => {
       totalSlots: 200,
       availableSlots: 75,
       pricePerHour: 8,
+      openHours: [
+        {
+            day: 'monday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'tuesday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'wednesday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'thursday',
+            open: '08:00',
+            close: '18:00',
+        },
+        {
+            day: 'friday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'saturday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'sunday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        }
+      ],
+      coordinates: {
+        lat: 37.7749,
+        lng: -122.4194
+      },
       publishedAt: new Date()
     },
     {
@@ -154,6 +248,53 @@ export default async (strapi: any) => {
       totalSlots: 150,
       availableSlots: 60,
       pricePerHour: 6,
+      openHours: [
+        {
+            day: 'monday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'tuesday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'wednesday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'thursday',
+            open: '08:00',
+            close: '18:00',
+        },
+        {
+            day: 'friday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'saturday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        },
+        {
+            day: 'sunday',
+            open: '08:00',
+            close: '18:00',
+            isClosed: false
+        }
+      ],
+      coordinates: {
+        lat: 37.7749,
+        lng: -122.4194
+      },
       publishedAt: new Date()
     }
   ];
@@ -171,6 +312,11 @@ export default async (strapi: any) => {
         number: i,
         isAvailable: i <= location.availableSlots,
         location: createdLocation.id,
+        type: 'standard',
+        coordinates: {
+            lat: 37.7749,
+            lng: -122.4194
+        },
         publishedAt: new Date()
       });
     }
