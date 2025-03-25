@@ -1,6 +1,22 @@
+/**
+ * booking controller
+ */
+
 import { factories } from '@strapi/strapi';
 
 export default factories.createCoreController('api::booking.booking', ({ strapi }) => ({
+  async find(ctx) {
+    // Add custom logic here if needed
+    const { data, meta } = await super.find(ctx);
+    return { data, meta };
+  },
+
+  async findOne(ctx) {
+    // Add custom logic here if needed
+    const { data, meta } = await super.findOne(ctx);
+    return { data, meta };
+  },
+
   async create(ctx) {
     // Create the booking
     const response = await super.create(ctx);
