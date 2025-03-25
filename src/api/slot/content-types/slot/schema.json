@@ -8,7 +8,7 @@
     "description": "Parking slots"
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
@@ -63,4 +63,4 @@
       "type": "json"
     }
   }
-} 
+}
