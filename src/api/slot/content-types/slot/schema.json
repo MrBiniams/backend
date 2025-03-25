@@ -8,7 +8,7 @@
     "description": "Parking slots"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -20,7 +20,9 @@
       "type": "enumeration",
       "enum": [
         "available",
-        "occupied"
+        "occupied",
+        "reserved",
+        "maintenance"
       ],
       "required": true,
       "default": "available"
@@ -29,7 +31,9 @@
       "type": "enumeration",
       "enum": [
         "standard",
-        "premium"
+        "premium",
+        "disabled",
+        "electric"
       ],
       "required": true,
       "default": "standard"
@@ -45,6 +49,18 @@
       "relation": "manyToOne",
       "target": "api::location.location",
       "inversedBy": "slots"
+    },
+    "currentBooking": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::booking.booking"
+    },
+    "price": {
+      "type": "decimal",
+      "min": 0
+    },
+    "features": {
+      "type": "json"
     }
   }
 } 

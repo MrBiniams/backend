@@ -7,7 +7,7 @@ export default {
    *
    * This gives you an opportunity to extend code.
    */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register(/* { strapi } */) {},
 
   /**
    * An asynchronous bootstrap function that runs before
@@ -16,5 +16,16 @@ export default {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  async bootstrap({ strapi }) {
+    // Initialize socket service
+    strapi.service('api::socket.socket').initialize();
+
+    // Run seed migration
+    try {
+      const seed = require('./migrations/seed').default;
+      await seed(strapi);
+    } catch (error) {
+      console.error('Error running seed migration:', error);
+    }
+  },
 };

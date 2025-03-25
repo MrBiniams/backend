@@ -5,24 +5,17 @@
     "singularName": "booking",
     "pluralName": "bookings",
     "displayName": "Booking",
-    "description": "Parking bookings"
+    "description": "Parking slot bookings"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
-  "pluginOptions": {},
   "attributes": {
-    "plateNumber": {
-      "type": "string",
-      "required": true
-    },
-    "date": {
-      "type": "date",
-      "required": true
-    },
-    "time": {
-      "type": "time",
-      "required": true
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "bookings"
     },
     "slot": {
       "type": "relation",
@@ -31,19 +24,38 @@
     },
     "location": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::location.location"
+      "relation": "manyToOne",
+      "target": "api::location.location",
+      "inversedBy": "bookings"
+    },
+    "startTime": {
+      "type": "datetime",
+      "required": true
+    },
+    "endTime": {
+      "type": "datetime",
+      "required": true
+    },
+    "plateNumber": {
+      "type": "string",
+      "required": true
     },
     "status": {
       "type": "enumeration",
       "enum": [
         "pending",
         "confirmed",
-        "cancelled",
-        "completed"
+        "active",
+        "completed",
+        "cancelled"
       ],
-      "default": "pending",
-      "required": true
+      "required": true,
+      "default": "pending"
+    },
+    "totalPrice": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
     },
     "paymentMethod": {
       "type": "enumeration",
@@ -58,10 +70,14 @@
       "enum": [
         "pending",
         "paid",
-        "failed"
+        "failed",
+        "refunded"
       ],
-      "default": "pending",
-      "required": true
+      "required": true,
+      "default": "pending"
+    },
+    "transactionId": {
+      "type": "string"
     }
   }
 } 

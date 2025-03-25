@@ -8,9 +8,8 @@
     "description": "Parking locations"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
-  "pluginOptions": {},
   "attributes": {
     "name": {
       "type": "string",
@@ -20,10 +19,18 @@
       "type": "string",
       "required": true
     },
+    "description": {
+      "type": "text"
+    },
     "coordinates": {
       "type": "component",
-      "repeatable": false,
-      "component": "common.coordinates",
+      "component": "location.coordinates",
+      "required": true
+    },
+    "openingHours": {
+      "type": "component",
+      "component": "location.opening-hours",
+      "repeatable": true,
       "required": true
     },
     "slots": {
@@ -31,6 +38,32 @@
       "relation": "oneToMany",
       "target": "api::slot.slot",
       "mappedBy": "location"
+    },
+    "bookings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::booking.booking",
+      "mappedBy": "location"
+    },
+    "totalSlots": {
+      "type": "integer",
+      "required": true,
+      "min": 0,
+      "default": 0
+    },
+    "availableSlots": {
+      "type": "integer",
+      "required": true,
+      "min": 0,
+      "default": 0
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 } 
