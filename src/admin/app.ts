@@ -17,32 +17,35 @@ export default {
     // Override or extend the theme
     theme: {
       colors: {
-        primary100: '#f0f6ff',
-        primary200: '#d9e7ff',
-        primary500: '#3B82F6',
-        primary600: '#4F46E5',
-        primary700: '#312e81',
-        danger700: '#b91c1c',
-        neutral100: '#f5f5f5',
-        neutral0: '#ffffff',
+        // Sky blue and white theme
+        primary100: '#e0f7ff',     // light sky blue background
+        primary200: '#b3e5fc',     // slightly deeper sky blue
+        primary500: '#03a9f4',     // vibrant sky blue
+        primary600: '#0288d1',     // deep sky blue for strong accents
+        primary700: '#01579b',     // navy blue for hover and focus
+        danger700: '#d32f2f',      // red for errors and alerts
+        neutral0: '#ffffff',       // pure white
+        neutral100: '#f9f9f9',     // soft white background
+        neutral200: '#e0e0e0',     // for subtle borders
+        neutral800: '#333333',     // dark text
       },
       shadows: {
-        tableShadow: '0px 1px 4px rgba(33, 33, 52, 0.1)',
+        tableShadow: '0px 2px 6px rgba(0, 0, 0, 0.08)',
       },
       sizes: {
         input: {
-          S: '8px',
-          M: '12px',
+          S: '10px',
+          M: '14px',
         },
       },
-      borderRadius: '8px',
+      borderRadius: '10px',
       button: {
         primary: {
-          backgroundColor: '#3B82F6',
+          backgroundColor: '#03a9f4', // vibrant sky blue
           color: '#ffffff',
         },
         secondary: {
-          backgroundColor: '#4F46E5',
+          backgroundColor: '#0288d1', // deeper blue
           color: '#ffffff',
         },
       },
@@ -53,4 +56,4 @@ export default {
     notifications: { releases: false },
   },
   bootstrap() {},
-}; 
+};
