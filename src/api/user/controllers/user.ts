@@ -63,7 +63,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       }
 
       // Verify password
-      const validPassword = await bcrypt.compare(password, user.password);
+      const validPassword = await strapi.plugins['users-permissions'].services.user.validatePassword(password, user.password);
       if (!validPassword) {
         ctx.throw(401, 'Invalid credentials');
       }
@@ -87,7 +87,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       };
 
       ctx.body = {
-        jwt: token,
+        token: token,
         user: sanitizedUser
       };
 
@@ -98,9 +98,9 @@ export default factories.createCoreController('plugin::users-permissions.user', 
 
   async register(ctx: Context) {
     try {
-      const { username, email, password, phoneNumber } = ctx.request.body;
+      const { username, email, password, phoneNumber, firstName, lastName } = ctx.request.body;
 
-      if (!username || !password || !phoneNumber) {
+      if (!username || !password || !phoneNumber || !firstName || !lastName) {
         ctx.throw(400, 'Please provide username, password, and phone number');
       }
 
@@ -119,16 +119,15 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         ctx.throw(400, 'Username, email, or phone number already exists');
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
       // Create user
       const user = await strapi.entityService.create('plugin::users-permissions.user', {
         data: {
           username,
           email,
-          password: hashedPassword,
+          password: password,
           phoneNumber,
+          firstName,
+          lastName,
           confirmed: true,
           blocked: false,
           provider: 'local'
@@ -150,14 +149,17 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         id: user.id,
         username: user.username,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         phoneNumber: user.phoneNumber,
-        role: user.role
+        role: user.role,
+        password: user.password
       };
 
       ctx.body = {
         message: 'User registered successfully',
         user: sanitizedUser,
-        jwt: token
+        token: token
       };
 
     } catch (error) {
@@ -180,6 +182,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
         role: user.role
       };
 
@@ -193,7 +196,6 @@ export default factories.createCoreController('plugin::users-permissions.user', 
   async updateProfile(ctx: Context) {
     try {
       const user = ctx.state.user;
-      const { email, username, phoneNumber } = ctx.request.body;
 
       if (!user) {
         ctx.throw(401, 'Not authenticated');
@@ -208,6 +210,8 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         username: response.data.username,
         email: response.data.email,
         phoneNumber: response.data.phoneNumber,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
         role: response.data.role
       };
 
