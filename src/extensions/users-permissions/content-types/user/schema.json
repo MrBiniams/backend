@@ -9,8 +9,7 @@
     "displayName": "User"
   },
   "options": {
-    "draftAndPublish": false,
-    "timestamps": true
+    "draftAndPublish": false
   },
   "attributes": {
     "username": {
@@ -68,6 +67,15 @@
       "relation": "oneToMany",
       "target": "api::booking.booking",
       "mappedBy": "user"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "isPhoneVerified": {
+      "type": "boolean",
+      "default": false
     }
   }
-} 
+}

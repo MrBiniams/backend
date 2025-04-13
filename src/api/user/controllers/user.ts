@@ -94,5 +94,175 @@ export default factories.createCoreController('plugin::users-permissions.user', 
     } catch (error) {
       ctx.throw(error.status || 500, error.message || 'Internal server error');
     }
+  },
+
+  async register(ctx: Context) {
+    try {
+      const { username, email, password, phoneNumber } = ctx.request.body;
+
+      if (!username || !password || !phoneNumber) {
+        ctx.throw(400, 'Please provide username, password, and phone number');
+      }
+
+      // Check if user already exists
+      const existingUser = await strapi.entityService.findMany('plugin::users-permissions.user', {
+        filters: {
+          $or: [
+            { email },
+            { username },
+            { phoneNumber }
+          ]
+        }
+      });
+
+      if (existingUser.length > 0) {
+        ctx.throw(400, 'Username, email, or phone number already exists');
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const user = await strapi.entityService.create('plugin::users-permissions.user', {
+        data: {
+          username,
+          email,
+          password: hashedPassword,
+          phoneNumber,
+          confirmed: true,
+          blocked: false,
+          provider: 'local'
+        }
+      });
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          id: user.id,
+          isAdmin: user.isAdmin || false
+        },
+        process.env.JWT_SECRET || 'your-jwt-secret',
+        { expiresIn: '1d' }
+      );
+
+      // Remove sensitive data
+      const sanitizedUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role
+      };
+
+      ctx.body = {
+        message: 'User registered successfully',
+        user: sanitizedUser,
+        jwt: token
+      };
+
+    } catch (error) {
+      ctx.throw(error.status || 500, error.message || 'Internal server error');
+    }
+  },
+
+  async getCurrentUser(ctx: Context) {
+    try {
+      const user = ctx.state.user;
+
+      if (!user) {
+        ctx.throw(401, 'Not authenticated');
+      }
+
+      // Remove sensitive data
+      const sanitizedUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role
+      };
+
+      ctx.body = sanitizedUser;
+
+    } catch (error) {
+      ctx.throw(error.status || 500, error.message || 'Internal server error');
+    }
+  },
+
+  async updateProfile(ctx: Context) {
+    try {
+      const user = ctx.state.user;
+      const { email, username, phoneNumber } = ctx.request.body;
+
+      if (!user) {
+        ctx.throw(401, 'Not authenticated');
+      }
+
+      // Use core controller update method
+      const response = await super.update(ctx);
+
+      // Remove sensitive data
+      const sanitizedUser = {
+        id: response.data.id,
+        username: response.data.username,
+        email: response.data.email,
+        phoneNumber: response.data.phoneNumber,
+        role: response.data.role
+      };
+
+      ctx.body = sanitizedUser;
+
+    } catch (error) {
+      ctx.throw(error.status || 500, error.message || 'Internal server error');
+    }
+  },
+
+  async checkPermission(ctx: Context) {
+    try {
+      const user = ctx.state.user;
+      const { permission } = ctx.request.body;
+
+      if (!user) {
+        ctx.throw(401, 'Not authenticated');
+      }
+
+      if (!user.role?.permissions) {
+        ctx.body = { hasPermission: false };
+        return;
+      }
+
+      ctx.body = {
+        hasPermission: user.role.permissions.includes(permission)
+      };
+
+    } catch (error) {
+      ctx.throw(error.status || 500, error.message || 'Internal server error');
+    }
+  },
+
+  async checkPermissions(ctx: Context) {
+    try {
+      const user = ctx.state.user;
+      const { permissions } = ctx.request.body;
+
+      if (!user) {
+        ctx.throw(401, 'Not authenticated');
+      }
+
+      if (!user.role?.permissions) {
+        ctx.body = { hasAllPermissions: false };
+        return;
+      }
+
+      ctx.body = {
+        hasAllPermissions: permissions.every(permission => 
+          user.role.permissions.includes(permission)
+        )
+      };
+
+    } catch (error) {
+      ctx.throw(error.status || 500, error.message || 'Internal server error');
+    }
   }
 })); 
