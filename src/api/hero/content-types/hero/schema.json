@@ -29,5 +29,10 @@
       "required": false,
       "allowedTypes": ["images"]
     }
+  },
+  "pluginOptions": {
+    "graphql": {
+      "enabled": true
+    }
   }
 } 

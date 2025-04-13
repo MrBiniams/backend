@@ -38,5 +38,10 @@
       "type": "uid",
       "targetField": "title"
     }
+  },
+  "pluginOptions": {
+    "graphql": {
+      "enabled": true
+    }
   }
 } 

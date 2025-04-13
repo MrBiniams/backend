@@ -19,5 +19,10 @@
       "type": "json",
       "required": true
     }
+  },
+  "pluginOptions": {
+    "graphql": {
+      "enabled": true
+    }
   }
 } 

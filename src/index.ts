@@ -22,8 +22,8 @@ export default {
 
     // Run seed migration
     try {
-      const seed = require('../database/migrations/seed').default;
-      await seed(strapi);
+      // const seed = require('../database/migrations/seed').default;
+      // await seed(strapi);
     } catch (error) {
       console.error('Error running seed migration:', error);
     }
