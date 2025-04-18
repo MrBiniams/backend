@@ -4,7 +4,6 @@
 
 import { factories } from '@strapi/strapi'
 import { Context } from 'koa';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 export default factories.createCoreController('plugin::users-permissions.user', ({ strapi }) => ({
@@ -83,6 +82,9 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         id: user.id,
         username: user.username,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
         role: user.role
       };
 
@@ -152,8 +154,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         firstName: user.firstName,
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
-        role: user.role,
-        password: user.password
+        role: user.role
       };
 
       ctx.body = {
@@ -169,6 +170,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
 
   async getCurrentUser(ctx: Context) {
     try {
+      console.log(ctx.state);
       const user = ctx.state.user;
 
       if (!user) {
@@ -189,7 +191,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       ctx.body = sanitizedUser;
 
     } catch (error) {
-      ctx.throw(error.status || 500, error.message || 'Internal server error');
+      ctx.throw(error.status || 500, 'This is the error');
     }
   },
 

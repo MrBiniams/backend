@@ -35,6 +35,10 @@ export default {
       path: '/auth/users/me',
       handler: 'user.getCurrentUser',
       config: {
+        auth: {
+          strategy: 'jwt',
+          scope: ['users-permissions']
+        },
         policies: [],
         description: 'Get current user',
         tag: {
@@ -49,6 +53,9 @@ export default {
       path: '/auth/users/me',
       handler: 'user.updateProfile',
       config: {
+        auth: {
+          scope: ['users-permissions']
+        },
         policies: [],
         description: 'Update current user profile',
         tag: {
@@ -63,6 +70,9 @@ export default {
       path: '/auth/users/check-permission',
       handler: 'user.checkPermission',
       config: {
+        auth: {
+          scope: ['users-permissions']
+        },
         policies: [],
         description: 'Check if user has specific permission',
         tag: {
@@ -77,6 +87,9 @@ export default {
       path: '/auth/users/check-permissions',
       handler: 'user.checkPermissions',
       config: {
+        auth: {
+          scope: ['users-permissions']
+        },
         policies: [],
         description: 'Check if user has all specified permissions',
         tag: {
