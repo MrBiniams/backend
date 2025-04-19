@@ -1,56 +1,4 @@
-const { firebaseAdmin } = require('../../../../config/firebase');
-
 export default {
-  async verifyToken(ctx) {
-    try {
-      const { token } = ctx.request.body;
-
-      if (!token) {
-        return ctx.badRequest('Token is required');
-      }
-
-      const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
-      const firebaseUser = await firebaseAdmin.auth().getUser(decodedToken.uid);
-
-      // Check if user exists in Strapi
-      let user = await strapi.query('plugin::users-permissions.user').findOne({
-        where: { firebaseUid: decodedToken.uid },
-      });
-
-      if (!user) {
-        // Create new user in Strapi
-        user = await strapi.query('plugin::users-permissions.user').create({
-          data: {
-            username: firebaseUser.phoneNumber,
-            email: firebaseUser.email || `${firebaseUser.phoneNumber}@firebase.com`,
-            provider: 'firebase',
-            confirmed: true,
-            blocked: false,
-            firebaseUid: decodedToken.uid,
-            phoneNumber: firebaseUser.phoneNumber,
-          },
-        });
-      }
-
-      // Generate JWT token for Strapi
-      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
-        id: user.id,
-      });
-
-      return {
-        jwt,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-        },
-      };
-    } catch (error) {
-      return ctx.unauthorized(error.message);
-    }
-  },
-
   async initializeOtp(ctx) {
     try {
       const { phoneNumber } = ctx.request.body;
@@ -59,66 +7,44 @@ export default {
         return ctx.badRequest('Phone number is required');
       }
 
-      // Initialize Firebase Auth
-      const auth = firebaseAdmin.auth();
+      // Simulate sending OTP
+      console.log(`Simulated OTP sent to ${phoneNumber}: 123456`);
 
-      // Check if user already exists
-      let userRecord;
-      try {
-        userRecord = await auth.getUserByPhoneNumber(phoneNumber);
-      } catch (error) {
-        // User doesn't exist, create new user
-        userRecord = await auth.createUser({
-          phoneNumber,
-        });
-      }
-
-      // Generate a session cookie
-      const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-      const sessionCookie = await auth.createSessionCookie(userRecord.uid, { expiresIn });
-
+      // Return a mock verification ID
       return {
         success: true,
-        verificationId: sessionCookie,
+        verificationId: `mock-verification-id-${Date.now()}`,
       };
     } catch (error) {
+      console.error('OTP initialization error:', error);
       return ctx.badRequest(error.message);
     }
   },
 
   async verifyOtp(ctx) {
     try {
-      const { verificationId, otp } = ctx.request.body;
+      const { verificationId, otp, phoneNumber } = ctx.request.body;
 
-      if (!verificationId || !otp) {
-        return ctx.badRequest('Verification ID and OTP are required');
+      if (!verificationId || !otp || !phoneNumber) {
+        return ctx.badRequest('Verification ID, OTP, and phone number are required');
       }
 
-      // Initialize Firebase Auth
-      const auth = firebaseAdmin.auth();
-
-      // Verify the session cookie
-      const decodedClaims = await auth.verifySessionCookie(verificationId);
-      const user = await auth.getUser(decodedClaims.uid);
+      // Simulate OTP verification
+      if (otp !== '123456') {
+        return ctx.badRequest('Invalid OTP');
+      }
 
       // Check if user exists in Strapi
       let strapiUser = await strapi.query('plugin::users-permissions.user').findOne({
-        where: { firebaseUid: user.uid },
+        where: { phoneNumber },
       });
 
       if (!strapiUser) {
-        // Create new user in Strapi
-        strapiUser = await strapi.query('plugin::users-permissions.user').create({
-          data: {
-            username: user.phoneNumber,
-            email: user.email || `${user.phoneNumber}@firebase.com`,
-            provider: 'firebase',
-            confirmed: true,
-            blocked: false,
-            firebaseUid: user.uid,
-            phoneNumber: user.phoneNumber,
-          },
-        });
+        // Return success but indicate user needs to sign up
+        return {
+          success: true,
+          needsSignup: true,
+        };
       }
 
       // Generate JWT token for Strapi
@@ -128,6 +54,7 @@ export default {
 
       return {
         success: true,
+        needsSignup: false,
         jwt,
         user: {
           id: strapiUser.id,
@@ -137,7 +64,48 @@ export default {
         },
       };
     } catch (error) {
+      console.error('OTP verification error:', error);
       return ctx.badRequest(error.message);
+    }
+  },
+
+  async verifyToken(ctx) {
+    try {
+      const { token } = ctx.request.body;
+
+      if (!token) {
+        return ctx.badRequest('Token is required');
+      }
+
+      // Verify the JWT token
+      const decodedToken = strapi.plugins['users-permissions'].services.jwt.verify(token);
+
+      if (!decodedToken || !decodedToken.id) {
+        return ctx.unauthorized('Invalid token');
+      }
+
+      // Get user from Strapi
+      const strapiUser = await strapi.query('plugin::users-permissions.user').findOne({
+        where: { id: decodedToken.id },
+      });
+
+      if (!strapiUser) {
+        return ctx.unauthorized('User not found');
+      }
+
+      return {
+        success: true,
+        needsSignup: false,
+        user: {
+          id: strapiUser.id,
+          username: strapiUser.username,
+          email: strapiUser.email,
+          phoneNumber: strapiUser.phoneNumber,
+        },
+      };
+    } catch (error) {
+      console.error('Token verification error:', error);
+      return ctx.unauthorized('Invalid token');
     }
   },
 }; 
