@@ -1,11 +1,11 @@
 import { factories } from '@strapi/strapi';
 
 export default factories.createCoreService('api::slot.slot', ({ strapi }) => ({
-  async updateStatus(id: number, status: 'available' | 'occupied' | 'reserved' | 'maintenance') {
+  async updateStatus(id: number, slotStatus: 'available' | 'occupied' | 'reserved' | 'maintenance') {
     // Update the slot status
     const updatedSlot = await strapi.entityService.update('api::slot.slot', id, {
       data: { 
-        status: status 
+        slotStatus: slotStatus 
       } as any,
       populate: ['location'],
     });
@@ -19,7 +19,7 @@ export default factories.createCoreService('api::slot.slot', ({ strapi }) => ({
       );
 
       const availableSlots = location.slots.filter(
-        (slot) => slot.status === 'available'
+        (slot) => slot.slotStatus === 'available'
       ).length;
 
       await strapi.entityService.update(
@@ -38,7 +38,7 @@ export default factories.createCoreService('api::slot.slot', ({ strapi }) => ({
         location.id,
         {
           slotId: id,
-          status,
+          slotStatus,
           availableSlots,
         }
       );
