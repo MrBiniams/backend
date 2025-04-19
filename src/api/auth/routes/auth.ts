@@ -16,5 +16,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/auth/register',
+      handler: 'auth.signup',
+      config: {
+        auth: false,
+      },
+    },
   ],
 }; 
