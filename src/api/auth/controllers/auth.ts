@@ -121,6 +121,9 @@ export default {
           provider: 'local',
           confirmed: true,
           blocked: false,
+          role: {
+            connect: [1]
+          }
         }
       });
 
