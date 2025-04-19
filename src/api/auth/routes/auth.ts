@@ -24,5 +24,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/auth/verify-token',
+      handler: 'auth.verifyToken',
+      config: {
+        auth: false,
+      },
+    },
   ],
 }; 
