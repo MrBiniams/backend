@@ -23,11 +23,9 @@ export default ({ strapi }) => ({
         return ctx.badRequest('Slot not found');
       }
 
-      if (slot.status !== 'available') {
+      if (slot.slotStatus !== 'available') {
         return ctx.badRequest('Slot is not available');
       }
-
-      console.log(slot);
   
       const locationId = slot.location.documentId;
 
@@ -35,9 +33,8 @@ export default ({ strapi }) => ({
       const booking = await strapi.entityService.create('api::booking.booking', {
         data: {
           plateNumber,
-          date: new Date().toISOString().split('T')[0],
-          time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-          status: 'pending',
+          bookingStatus: 'pending',
+          startTime: new Date().toISOString(),
           user: userId,
           location: locationId,
           slot: slotId
@@ -47,7 +44,7 @@ export default ({ strapi }) => ({
       // Update slot status to occupied
       await strapi.entityService.update('api::slot.slot', slotId, {
         data: {
-          status: 'occupied'
+          slotStatus: 'occupied'
         }
       });
 
@@ -88,7 +85,7 @@ export default ({ strapi }) => ({
       if (status === 'active') {
         await strapi.entityService.update('api::slot.slot', booking.slot.id, {
           data: {
-            status: 'occupied'
+            slotStatus: 'occupied'
           }
         });
       }

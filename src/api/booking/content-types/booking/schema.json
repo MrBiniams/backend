@@ -34,7 +34,7 @@
     },
     "endTime": {
       "type": "datetime",
-      "required": true
+      "required": false
     },
     "plateNumber": {
       "type": "string",
@@ -54,16 +54,16 @@
     },
     "totalPrice": {
       "type": "decimal",
-      "required": true,
-      "min": 0
+      "required": false,
+      "min": 0,
+      "default": 0
     },
     "paymentMethod": {
       "type": "enumeration",
       "enum": [
         "telebirr",
         "cbe-birr"
-      ],
-      "required": true
+      ]
     },
     "paymentStatus": {
       "type": "enumeration",
