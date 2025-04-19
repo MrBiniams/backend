@@ -54,12 +54,14 @@ export default {
       // Generate JWT token using users-permissions plugin
       const token = strapi.plugins['users-permissions'].services.jwt.issue({
         id: strapiUser.id,
+        documentId: strapiUser.documentId,
         phoneNumber: strapiUser.phoneNumber
       });
 
       // Remove sensitive data
       const sanitizedUser = {
         id: strapiUser.id,
+        documentId: strapiUser.documentId,
         email: strapiUser.email,
         firstName: strapiUser.firstName,
         lastName: strapiUser.lastName,
@@ -130,12 +132,14 @@ export default {
       // Generate JWT token using users-permissions plugin
       const token = strapi.plugins['users-permissions'].services.jwt.issue({
         id: newUser.id,
+        documentId: newUser.documentId,
         phoneNumber: newUser.phoneNumber
       });
 
       // Remove sensitive data
       const sanitizedUser = {
         id: newUser.id,
+        documentId: newUser.documentId,
         email: newUser.email,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
@@ -173,7 +177,7 @@ export default {
       const users = await strapi.entityService.findMany('plugin::users-permissions.user', {
         filters: {
           $or: [
-            { id: decodedToken.id },
+            { documentId: decodedToken.documentId },
             { phoneNumber: decodedToken.phoneNumber }
           ]
         }
@@ -188,6 +192,7 @@ export default {
       // Remove sensitive data
       const sanitizedUser = {
         id: strapiUser.id,
+        documentId: strapiUser.documentId,
         email: strapiUser.email,
         firstName: strapiUser.firstName,
         lastName: strapiUser.lastName,

@@ -71,6 +71,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       const token = jwt.sign(
         { 
           id: user.id,
+          documentId: user.documentId,
           isAdmin: user.isAdmin || false
         },
         process.env.JWT_SECRET || 'your-jwt-secret',
@@ -80,6 +81,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       // Remove sensitive data
       const sanitizedUser = {
         id: user.id,
+        documentId: user.documentId,
         username: user.username,
         email: user.email,
         firstName: user.firstName,
@@ -149,6 +151,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       // Remove sensitive data
       const sanitizedUser = {
         id: user.id,
+        documentId: user.documentId,
         username: user.username,
         email: user.email,
         firstName: user.firstName,
@@ -180,6 +183,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       // Remove sensitive data
       const sanitizedUser = {
         id: user.id,
+        documentId: user.documentId,
         username: user.username,
         email: user.email,
         firstName: user.firstName,
@@ -209,6 +213,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
       // Remove sensitive data
       const sanitizedUser = {
         id: response.data.id,
+        documentId: user.documentId,
         username: response.data.username,
         email: response.data.email,
         phoneNumber: response.data.phoneNumber,

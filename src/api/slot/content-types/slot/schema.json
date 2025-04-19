@@ -16,7 +16,7 @@
       "type": "string",
       "required": true
     },
-    "status": {
+    "slotStatus": {
       "type": "enumeration",
       "enum": [
         "available",

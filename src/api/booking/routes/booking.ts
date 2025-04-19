@@ -40,6 +40,17 @@ export default {
     },
     {
       method: 'PUT',
+      path: '/booking/:id/status',
+      handler: 'booking.updateStatus',
+      config: {
+        policies: [],
+        auth: {
+          enabled: false
+        },
+      },
+    },
+    {
+      method: 'PUT',
       path: '/booking/:id',
       handler: 'booking.update',
       config: {

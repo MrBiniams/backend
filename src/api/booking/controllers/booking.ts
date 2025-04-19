@@ -4,7 +4,25 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreController('api::booking.booking', ({ strapi }) => ({
+export default {
+  async create(ctx) {
+    try {
+      const result = await strapi.service('api::booking.booking').createBooking(ctx);
+      return result;
+    } catch (error) {
+      return ctx.badRequest(error.message);
+    }
+  },
+
+  async updateStatus(ctx) {
+    try {
+      const result = await strapi.service('api::booking.booking').updateBookingStatus(ctx);
+      return result;
+    } catch (error) {
+      return ctx.badRequest(error.message);
+    }
+  },
+
   async find(ctx) {
     // Add custom logic here if needed
     const { data, meta } = await super.find(ctx);
@@ -15,20 +33,6 @@ export default factories.createCoreController('api::booking.booking', ({ strapi 
     // Add custom logic here if needed
     const { data, meta } = await super.findOne(ctx);
     return { data, meta };
-  },
-
-  async create(ctx) {
-    // Create the booking
-    const response = await super.create(ctx);
-    
-    // Emit socket event
-    strapi.service('api::socket.socket').emit(
-      'booking-created',
-      response.data.attributes.locationId,
-      response.data
-    );
-
-    return response;
   },
 
   async update(ctx) {
@@ -49,7 +53,7 @@ export default factories.createCoreController('api::booking.booking', ({ strapi 
     // Get the booking before deletion
     const booking = await strapi.entityService.findOne(
       'api::booking.booking',
-      ctx.params.id,
+      ctx.params.documentId,
       { populate: ['location'] }
     );
 
@@ -57,14 +61,14 @@ export default factories.createCoreController('api::booking.booking', ({ strapi 
     const response = await super.delete(ctx);
     
     // Emit socket event
-    if (booking?.location?.id) {
+    if (booking?.location?.documentId) {
       strapi.service('api::socket.socket').emit(
         'booking-deleted',
-        booking.location.id,
-        { id: ctx.params.id }
+        booking.location.documentId,
+        { documentId: ctx.params.documentId }
       );
     }
 
     return response;
   },
-})); 
+}; 
