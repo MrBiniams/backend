@@ -160,10 +160,10 @@ export default {
       }
 
       // Verify the JWT token using users-permissions plugin
-      const decodedToken = strapi.plugins['users-permissions'].services.jwt.verify(token);
+      const decodedToken = await strapi.plugins['users-permissions'].services.jwt.verify(token);
 
       if (!decodedToken || !decodedToken.id || !decodedToken.phoneNumber) {
-        return ctx.unauthorized('Invalid token');
+        return ctx.unauthorized('Invalid token or token expired ' + decodedToken);
       }
 
       // Find the user using entity service
@@ -182,12 +182,6 @@ export default {
         return ctx.unauthorized('User not found');
       }
 
-      // Generate new token
-      const newToken = strapi.plugins['users-permissions'].services.jwt.issue({
-        id: strapiUser.id,
-        phoneNumber: strapiUser.phoneNumber
-      });
-
       // Remove sensitive data
       const sanitizedUser = {
         id: strapiUser.id,
@@ -200,8 +194,7 @@ export default {
 
       return {
         success: true,
-        needsSignup: false,
-        jwt: newToken,
+        jwt: token,
         user: sanitizedUser
       };
     } catch (error) {
