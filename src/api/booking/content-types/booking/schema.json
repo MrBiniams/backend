@@ -76,8 +76,11 @@
       "required": true,
       "default": "pending"
     },
-    "transactionId": {
-      "type": "string"
+    "transaction": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::transaction.transaction",
+      "mappedBy": "booking"
     }
   }
 }

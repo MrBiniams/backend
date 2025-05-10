@@ -1,18 +1,18 @@
 export default ({ strapi }) => ({
   async createBooking(ctx) {
     try {
-      const { plateNumber, slotId } = ctx.request.body;
+      const { plateNumber, slotId, paymentMethod } = ctx.request.body;
       const userId = ctx.state.user.documentId;
 
       // Validate required fields
       if (!plateNumber || !slotId) {
-        return ctx.badRequest('Plate number, and slot are required');
+        return ctx.badRequest('Plate number and slot are required');
       }
 
       // Check if slot exists and is available
       const slots = await strapi.entityService.findMany('api::slot.slot', {
         filters: {
-          documentId: slotId, // assuming `slotId` is your custom ID
+          documentId: slotId,
         },
         populate: ['location'],
       });
@@ -26,7 +26,7 @@ export default ({ strapi }) => ({
       if (slot.slotStatus !== 'available') {
         return ctx.badRequest('Slot is not available');
       }
-  
+
       const locationId = slot.location.documentId;
 
       // Create booking
@@ -37,7 +37,9 @@ export default ({ strapi }) => ({
           startTime: new Date().toISOString(),
           user: userId,
           location: locationId,
-          slot: slotId
+          slot: slotId,
+          paymentMethod,
+          paymentStatus: 'pending'
         }
       });
 
@@ -47,6 +49,40 @@ export default ({ strapi }) => ({
           slotStatus: 'occupied'
         }
       });
+
+      // If payment method is provided, initiate payment
+      if (paymentMethod) {
+        try {
+          const amount = slot.price || 0;
+          const paymentResult = await strapi.service('api::payment.payment').processPayment(
+            booking.id,
+            amount,
+            paymentMethod
+          );
+
+          return {
+            success: true,
+            booking,
+            payment: paymentResult
+          };
+        } catch (paymentError) {
+          // If payment fails, update booking status
+          await strapi.entityService.update('api::booking.booking', booking.id, {
+            data: {
+              paymentStatus: 'failed'
+            }
+          });
+
+          // Revert slot status
+          await strapi.entityService.update('api::slot.slot', slotId, {
+            data: {
+              slotStatus: 'available'
+            }
+          });
+
+          throw paymentError;
+        }
+      }
 
       return {
         success: true,
