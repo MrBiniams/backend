@@ -1,12 +1,18 @@
 export default ({ strapi }) => ({
   async createBooking(ctx) {
     try {
-      const { plateNumber, slotId, paymentMethod } = ctx.request.body;
+      const { plateNumber, slotId, paymentMethod, time } = ctx.request.body;
       const userId = ctx.state.user.documentId;
 
       // Validate required fields
-      if (!plateNumber || !slotId) {
-        return ctx.badRequest('Plate number and slot are required');
+      if (!plateNumber || !slotId || !time) {
+        return ctx.badRequest('Plate number, slot, and duration are required');
+      }
+
+      // Validate time (duration in hours)
+      const duration = parseInt(time);
+      if (isNaN(duration) || duration < 1 || duration > 24) {
+        return ctx.badRequest('Duration must be between 1 and 24 hours');
       }
 
       // Check if slot exists and is available
@@ -29,17 +35,27 @@ export default ({ strapi }) => ({
 
       const locationId = slot.location.documentId;
 
+      // Calculate start and end times using current date
+      const startTime = new Date();
+      const endTime = new Date(startTime);
+      endTime.setHours(endTime.getHours() + duration);
+
+      // Calculate total price based on duration and slot price
+      const totalPrice = (slot.price || 0) * duration;
+
       // Create booking
       const booking = await strapi.entityService.create('api::booking.booking', {
         data: {
           plateNumber,
           bookingStatus: 'pending',
-          startTime: new Date().toISOString(),
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
           user: userId,
           location: locationId,
           slot: slotId,
           paymentMethod,
-          paymentStatus: 'pending'
+          paymentStatus: 'pending',
+          totalPrice
         }
       });
 
@@ -53,10 +69,9 @@ export default ({ strapi }) => ({
       // If payment method is provided, initiate payment
       if (paymentMethod) {
         try {
-          const amount = slot.price || 0;
           const paymentResult = await strapi.service('api::payment.payment').processPayment(
             booking.id,
-            amount,
+            totalPrice,
             paymentMethod
           );
 
