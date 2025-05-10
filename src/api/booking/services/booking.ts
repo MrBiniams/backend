@@ -1,7 +1,7 @@
 export default ({ strapi }) => ({
   async createBooking(ctx) {
     try {
-      const { plateNumber, slotId, paymentMethod, time } = ctx.request.body;
+      const { plateNumber, slotId, time } = ctx.request.body;
       const userId = ctx.state.user.documentId;
 
       // Validate required fields
@@ -67,7 +67,6 @@ export default ({ strapi }) => ({
           user: userId,
           location: locationId,
           slot: slotId,
-          paymentMethod,
           paymentStatus: 'pending',
           totalPrice
         }
@@ -79,39 +78,6 @@ export default ({ strapi }) => ({
           slotStatus: 'occupied'
         }
       });
-
-      // If payment method is provided, initiate payment
-      if (paymentMethod) {
-        try {
-          const paymentResult = await strapi.service('api::payment.payment').processPayment(
-            booking.id,
-            totalPrice,
-            paymentMethod
-          );
-
-          return {
-            success: true,
-            booking,
-            payment: paymentResult
-          };
-        } catch (paymentError) {
-          // If payment fails, update booking status
-          await strapi.entityService.update('api::booking.booking', booking.id, {
-            data: {
-              paymentStatus: 'failed'
-            }
-          });
-
-          // Revert slot status
-          await strapi.entityService.update('api::slot.slot', slotId, {
-            data: {
-              slotStatus: 'available'
-            }
-          });
-
-          throw paymentError;
-        }
-      }
 
       return {
         success: true,

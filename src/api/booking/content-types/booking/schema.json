@@ -58,13 +58,6 @@
       "min": 0,
       "default": 0
     },
-    "paymentMethod": {
-      "type": "enumeration",
-      "enum": [
-        "telebirr",
-        "cbe-birr"
-      ]
-    },
     "paymentStatus": {
       "type": "enumeration",
       "enum": [

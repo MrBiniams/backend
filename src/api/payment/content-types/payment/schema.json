@@ -38,6 +38,14 @@
       "required": true,
       "unique": true
     },
+    "paymentMethod": {
+      "type": "enumeration",
+      "enum": [
+        "telebirr",
+        "cbe-birr"
+      ],
+      "required": true
+    },
     "paymentProviderTransactionId": {
       "type": "string"
     },
