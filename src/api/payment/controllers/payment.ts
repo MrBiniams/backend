@@ -53,15 +53,17 @@ export default {
           transactionId,
           paymentMethod: normalizedPaymentMethod,
           booking: bookingId,
-          customerPhone: booking.user.phone,
+          customerPhone: booking.user.phoneNumber,
           customerEmail: booking.user.email,
-          customerName: `${booking.user.firstname} ${booking.user.lastname}`,
+          customerName: booking.user.firstName ? `${booking.user.firstName} ${booking.user.lastName}` : booking.user.phoneNumber,
           metadata: {
             bookingId,
             slotId: booking.slot.id,
             locationId: booking.slot.location?.id
           },
-          publishedAt: new Date()
+          publishedAt: new Date(),
+          description: `Payment for booking ${bookingId}`,
+          paymentUrl: `${process.env.NEXT_PUBLIC_API_URL}/payment/verify/${transactionId}`
         }
       });
 
