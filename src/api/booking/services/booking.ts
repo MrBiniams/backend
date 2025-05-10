@@ -15,6 +15,20 @@ export default ({ strapi }) => ({
         return ctx.badRequest('Duration must be between 1 and 24 hours');
       }
 
+      // Check for existing active bookings with the same plate number
+      const existingBookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          plateNumber,
+          bookingStatus: {
+            $in: ['pending', 'confirmed', 'active']
+          }
+        }
+      });
+
+      if (existingBookings.length > 0) {
+        return ctx.badRequest('This plate number already has an active booking');
+      }
+
       // Check if slot exists and is available
       const slots = await strapi.entityService.findMany('api::slot.slot', {
         filters: {
