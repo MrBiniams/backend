@@ -1,18 +1,27 @@
+import { factories } from '@strapi/strapi';
+
 export default ({ strapi }) => ({
   async createBooking(ctx) {
     try {
       const { plateNumber, slotId, time } = ctx.request.body;
       const userId = ctx.state.user.documentId;
 
+
       // Validate required fields
       if (!plateNumber || !slotId || !time) {
-        return ctx.badRequest('Plate number, slot, and duration are required');
+        return {
+          error: 'Missing required fields',
+          status: 400
+        };
       }
 
-      // Validate time (duration in hours)
+      // Validate time (1-24 hours)
       const duration = parseInt(time);
       if (isNaN(duration) || duration < 1 || duration > 24) {
-        return ctx.badRequest('Duration must be between 1 and 24 hours');
+        return {
+          error: 'Invalid duration. Must be between 1 and 24 hours',
+          status: 400
+        };
       }
 
       // Check for existing active bookings with the same plate number
@@ -26,7 +35,10 @@ export default ({ strapi }) => ({
       });
 
       if (existingBookings.length > 0) {
-        return ctx.badRequest('This plate number already has an active booking');
+        return {
+          error: 'This plate number already has an active booking',
+          status: 400
+        };
       }
 
       // Check if slot exists and is available
@@ -40,42 +52,46 @@ export default ({ strapi }) => ({
       const slot = slots[0] || null;
 
       if (!slot) {
-        return ctx.badRequest('Slot not found');
+        return {
+          error: 'Slot not found',
+          status: 404
+        };
       }
 
+      // Check if slot is available
       if (slot.slotStatus !== 'available') {
-        return ctx.badRequest('Slot is not available');
+        return {
+          error: 'Slot is not available',
+          status: 400
+        };
       }
 
-      const locationId = slot.location.documentId;
-
-      // Calculate start and end times using current date
+      // Calculate start and end times
       const startTime = new Date();
-      const endTime = new Date(startTime);
-      endTime.setHours(endTime.getHours() + duration);
+      const endTime = new Date(startTime.getTime() + duration * 60 * 60 * 1000);
 
-      // Calculate total price based on duration and slot price
-      const totalPrice = (slot.price || 0) * duration;
+      // Calculate total price
+      const totalPrice = duration * slot.price;
 
       // Create booking
       const booking = await strapi.entityService.create('api::booking.booking', {
         data: {
           plateNumber,
-          bookingStatus: 'pending',
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          user: userId,
-          location: locationId,
           slot: slotId,
+          startTime,
+          endTime,
+          duration,
+          totalPrice,
+          bookingStatus: 'pending',
           paymentStatus: 'pending',
-          totalPrice
+          user: userId
         }
       });
 
-      // Update slot status to occupied
+      // Update slot status to reserved
       await strapi.entityService.update('api::slot.slot', slotId, {
         data: {
-          slotStatus: 'occupied'
+          slotStatus: 'reserved'
         }
       });
 
@@ -84,8 +100,11 @@ export default ({ strapi }) => ({
         booking
       };
     } catch (error) {
-      console.error('Booking creation error:', error);
-      return ctx.badRequest(error.message);
+      console.error('Error deleting booking:', error);
+      return {
+        error: 'Failed to delete booking',
+        status: 500
+      };
     }
   },
 
@@ -109,12 +128,12 @@ export default ({ strapi }) => ({
 
       // Update booking status
       const updatedBooking = await strapi.entityService.update('api::booking.booking', bookingId, {
-        data: { status }
+        data: { bookingStatus: status }
       });
 
       // If status changed to active, update slot status
       if (status === 'active') {
-        await strapi.entityService.update('api::slot.slot', booking.slot.id, {
+        await strapi.entityService.update('api::slot.slot', booking.slot.documentId, {
           data: {
             slotStatus: 'occupied'
           }

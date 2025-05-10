@@ -2,8 +2,13 @@ export default {
   async initiate(ctx) {
     try {
       const { bookingId, paymentMethod } = ctx.request.body;
-      const userId = ctx.state.user.id;
+      const user = ctx.state.user;
 
+      if (!user) {
+        ctx.throw(401, 'Not authenticated');
+      }
+      
+      const userId = user.documentId;
       // Validate required fields
       if (!bookingId || !paymentMethod) {
         return ctx.badRequest('Booking ID and payment method are required');
@@ -24,9 +29,9 @@ export default {
       if (!booking) {
         return ctx.badRequest('Booking not found');
       }
-
+      console.log('booking', booking.user);
       // Check if booking belongs to user
-      if (booking.user.id !== userId) {
+      if (booking.user.documentId !== userId) {
         return ctx.badRequest('Unauthorized');
       }
 
@@ -53,37 +58,41 @@ export default {
           transactionId,
           paymentMethod: normalizedPaymentMethod,
           booking: bookingId,
-          customerPhone: booking.user.phoneNumber,
+          customerPhone: booking.user.phone,
           customerEmail: booking.user.email,
-          customerName: booking.user.firstName ? `${booking.user.firstName} ${booking.user.lastName}` : booking.user.phoneNumber,
+          customerName: `${booking.user.firstname} ${booking.user.lastname}`,
           metadata: {
             bookingId,
             slotId: booking.slot.id,
             locationId: booking.slot.location?.id
           },
-          publishedAt: new Date(),
-          description: `Payment for booking ${bookingId}`,
-          paymentUrl: `${process.env.NEXT_PUBLIC_API_URL}/payment/verify/${transactionId}`
+          publishedAt: new Date()
         }
       });
 
       // Get payment provider service
       let paymentProvider;
-      switch (normalizedPaymentMethod) {
-        case 'telebirr':
-          paymentProvider = strapi.service('api::payment.telebirr');
-          break;
-        case 'cbe-birr':
-          paymentProvider = strapi.service('api::payment.cbe-birr');
-          break;
-        default:
-          return ctx.badRequest('Invalid payment method');
+      if (process.env.NODE_ENV === 'development' && normalizedPaymentMethod === 'telebirr') {
+        // Use simulator in development mode for TeleBirr
+        paymentProvider = strapi.service('api::payment.telebirr-simulator');
+      } else {
+        // Use real payment provider
+        switch (normalizedPaymentMethod) {
+          case 'telebirr':
+            paymentProvider = strapi.service('api::payment.telebirr');
+            break;
+          case 'cbe-birr':
+            paymentProvider = strapi.service('api::payment.cbe-birr');
+            break;
+          default:
+            return ctx.badRequest('Invalid payment method');
+        }
       }
 
       if (!paymentProvider) {
         return ctx.badRequest('Payment provider not available');
       }
-
+      console.log('paymentProvider', paymentProvider);
       // Initiate payment with provider
       const paymentResult = await paymentProvider.initiatePayment(payment);
 
