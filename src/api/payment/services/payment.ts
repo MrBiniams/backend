@@ -106,7 +106,7 @@ export default ({ strapi }) => ({
 
       // Update booking status
       if (transaction.booking) {
-        await strapi.entityService.update('api::booking.booking', transaction.booking.id, {
+        await strapi.entityService.update('api::booking.booking', transaction.booking.documentId, {
           data: {
             paymentStatus: verificationResult.status === 'success' ? 'paid' : 'failed',
             bookingStatus: verificationResult.status === 'success' ? 'confirmed' : 'pending'

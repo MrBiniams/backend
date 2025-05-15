@@ -22,9 +22,14 @@ export default {
       }
 
       // Get booking details
-      const booking = await strapi.entityService.findOne('api::booking.booking', bookingId, {
+      const bookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          documentId: bookingId
+        },
         populate: ['user', 'slot']
       });
+
+      const booking = bookings[0];
 
       if (!booking) {
         return ctx.badRequest('Booking not found');
