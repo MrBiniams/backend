@@ -13,7 +13,7 @@ export default {
     },
     {
       method: 'GET',
-      path: '/payment/verify/:transactionId',
+      path: '/payment/verify/:paymentId',
       handler: 'payment.verify',
       config: {
         policies: [],

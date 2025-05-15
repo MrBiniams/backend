@@ -110,8 +110,14 @@ export default {
   },
   async verify(ctx) {
     try {
-      const { transactionId } = ctx.request.query;
-      const payment = await strapi.entityService.findOne('api::payment.payment', paymentId);
+      const { paymentId } = ctx.request.params;
+      const payments = await strapi.entityService.findMany('api::payment.payment', {
+        filters: {
+          documentId: paymentId
+        }
+      });
+
+      const payment = payments[0];
       
       if (!payment) {
         return ctx.badRequest('Payment not found');
@@ -141,7 +147,7 @@ export default {
       }
 
       // Verify payment with provider 
-      const paymentResult = await paymentProvider.verifyPayment(transactionId);
+      const paymentResult = await paymentProvider.verifyPayment(paymentId);
 
       return {
         success: true,

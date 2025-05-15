@@ -3,7 +3,6 @@ import axios from 'axios';
 export default ({ strapi }) => ({
   async initiatePayment(transaction) {
     try {
-      console.log('initiatePayment', transaction);
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -39,31 +38,28 @@ export default ({ strapi }) => ({
 
   async verifyPayment(paymentId) {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const transactions = await strapi.entityService.findMany('api::transaction.transaction', {
+      const payments = await strapi.entityService.findMany('api::payment.payment', {
         filters: {
           documentId: paymentId
         },
         populate: ['booking']
       });
 
-      const transaction = transactions[0];
+      const payment = payments[0];
 
-      if (!transaction) {
-        throw new Error('Transaction not found');
+      if (!payment) {
+        throw new Error('Payment not found');
       }
-
       // Simulate successful payment verification
       const response = {
         status: 'success',
         message: 'Payment verified successfully',
-        transactionId: transaction.transactionId,
-        amount: transaction.amount,
-        currency: transaction.currency,
+        paymentId: payment.documentId,
+        transactionId: payment.transactionId,
+        amount: payment.amount,
+        currency: payment.currency,
         timestamp: new Date().toISOString(),
-        bookingId: transaction.booking.documentId
+        bookingId: payment.booking?.documentId || null
       };
 
       return {
