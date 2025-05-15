@@ -8,7 +8,7 @@
     "description": "Payment records for the system"
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

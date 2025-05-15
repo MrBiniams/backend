@@ -39,7 +39,8 @@ export default ({ strapi }) => ({
           paymentMethod,
           paymentStatus: 'pending',
           transaction: transaction.id,
-          totalPrice: amount
+          totalPrice: amount,
+          publishedAt: new Date()
         }
       });
 
@@ -100,7 +101,8 @@ export default ({ strapi }) => ({
         data: {
           status: verificationResult.status === 'success' ? 'completed' : 'failed',
           paymentProviderResponse: verificationResult.providerResponse,
-          errorMessage: verificationResult.status !== 'success' ? verificationResult.message : null
+          errorMessage: verificationResult.status !== 'success' ? verificationResult.message : null,
+          publishedAt: new Date()
         }
       });
 
@@ -109,7 +111,8 @@ export default ({ strapi }) => ({
         await strapi.entityService.update('api::booking.booking', transaction.booking.id, {
           data: {
             paymentStatus: verificationResult.status === 'success' ? 'paid' : 'failed',
-            bookingStatus: verificationResult.status === 'success' ? 'confirmed' : 'pending'
+            bookingStatus: verificationResult.status === 'success' ? 'confirmed' : 'pending',
+            publishedAt: new Date()
           }
         });
       }

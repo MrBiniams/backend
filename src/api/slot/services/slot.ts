@@ -5,7 +5,8 @@ export default factories.createCoreService('api::slot.slot', ({ strapi }) => ({
     // Update the slot status
     const updatedSlot = await strapi.entityService.update('api::slot.slot', id, {
       data: { 
-        slotStatus: slotStatus 
+        slotStatus: slotStatus,
+        publishedAt: new Date()
       } as any,
       populate: ['location'],
     });

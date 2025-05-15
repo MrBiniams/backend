@@ -37,7 +37,8 @@ export default ({ strapi }) => ({
         data: {
           paymentProviderResponse: response.data,
           paymentProviderTransactionId: response.data.providerTransactionId,
-          paymentProviderReference: response.data.reference
+          paymentProviderReference: response.data.reference,
+          publishedAt: new Date()
         }
       });
 

@@ -71,7 +71,8 @@ export default ({ strapi }) => ({
         data: {
           paymentProviderResponse: response.data,
           paymentProviderTransactionId: response.data.providerTransactionId,
-          paymentProviderReference: response.data.reference
+          paymentProviderReference: response.data.reference,
+          publishedAt: new Date()
         }
       });
 
@@ -80,7 +81,8 @@ export default ({ strapi }) => ({
         data: {
           paymentMethod: 'telebirr',
           paymentStatus: 'pending',
-          transaction: transaction.id
+          transaction: transaction.id,
+          publishedAt: new Date()
         }
       });
 
@@ -131,7 +133,8 @@ export default ({ strapi }) => ({
         data: {
           status: response.data.status === 'success' ? 'completed' : 'failed',
           paymentProviderResponse: response.data,
-          errorMessage: response.data.status !== 'success' ? response.data.message : null
+          errorMessage: response.data.status !== 'success' ? response.data.message : null,
+          publishedAt: new Date()
         }
       });
 
@@ -140,7 +143,8 @@ export default ({ strapi }) => ({
         await strapi.entityService.update('api::booking.booking', transaction.booking.id, {
           data: {
             paymentStatus: response.data.status === 'success' ? 'paid' : 'failed',
-            bookingStatus: response.data.status === 'success' ? 'confirmed' : 'pending'
+            bookingStatus: response.data.status === 'success' ? 'confirmed' : 'pending',
+            publishedAt: new Date()
           }
         });
       }

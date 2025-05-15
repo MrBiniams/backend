@@ -160,7 +160,8 @@ export default {
         await strapi.entityService.update('api::payment.payment', payment.id, {
           data: {
             status: 'completed',
-            paymentProviderResponse: paymentResult.data
+            paymentProviderResponse: paymentResult.data,
+            publishedAt: new Date()
           } as any
         });
 
@@ -179,7 +180,8 @@ export default {
           await strapi.entityService.update('api::booking.booking', booking.id, {
             data: {
               bookingStatus: 'active',
-              paymentStatus: 'paid'
+              paymentStatus: 'paid',
+              publishedAt: new Date()
             } as any,
             populate: []
           });
@@ -188,7 +190,8 @@ export default {
           if (booking.slot) {
             await strapi.entityService.update('api::slot.slot', booking.slot.id, {
               data: {
-                slotStatus: 'occupied'
+                slotStatus: 'occupied',
+                publishedAt: new Date()
               } as any,
               populate: []
             });
