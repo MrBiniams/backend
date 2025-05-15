@@ -118,7 +118,8 @@ export default {
       const payments = await strapi.entityService.findMany('api::payment.payment', {
         filters: {
           documentId: paymentId
-        }
+        },
+        populate: ['booking']
       });
 
       const payment = payments[0];
@@ -166,8 +167,9 @@ export default {
         // Get booking with populated slot
         const bookings = await strapi.entityService.findMany('api::booking.booking', {
           filters: {
-            documentId: payment.booking
-          }
+            documentId: payment.booking.documentId
+          },
+          populate: ['slot']
         });
 
         const booking = bookings[0];
