@@ -58,13 +58,12 @@ export default ({ strapi }) => ({
         transactionId: payment.transactionId,
         amount: payment.amount,
         currency: payment.currency,
-        timestamp: new Date().toISOString(),
-        bookingId: payment.booking?.documentId || null
+        timestamp: new Date().toISOString()
       };
 
       return {
         status: 'success',
-        providerResponse: response,
+        data: response,
         message: 'Payment verified successfully'
       };
     } catch (error) {
