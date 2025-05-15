@@ -95,7 +95,7 @@ export default ({ strapi }) => ({
     }
   },
 
-  async verifyPayment(transactionId: string) {
+  async verifyPayment(paymentId: string) {
     try {
       const telebirrConfig = {
         apiKey: process.env.TELEBIRR_API_KEY,
@@ -106,7 +106,7 @@ export default ({ strapi }) => ({
       // Find transaction
       const transactions = await strapi.entityService.findMany('api::transaction.transaction', {
         filters: {
-          transactionId: transactionId
+          documentId: paymentId
         },
         populate: ['booking']
       });
@@ -118,7 +118,7 @@ export default ({ strapi }) => ({
 
       // Verify payment with Telebirr
       const response = await axios.get(
-        `${telebirrConfig.apiUrl}/payment/verify/${transactionId}`,
+        `${telebirrConfig.apiUrl}/payment/verify/${paymentId}`,
         {
           headers: {
             'Authorization': `Bearer ${telebirrConfig.apiKey}`,

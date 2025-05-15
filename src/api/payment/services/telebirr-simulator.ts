@@ -8,7 +8,7 @@ export default ({ strapi }) => ({
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Generate a simulated payment URL
-      const paymentUrl = `${process.env.FRONTEND_URL}/payment/simulate?transactionId=${transaction.transactionId}`;
+      const paymentUrl = `${process.env.FRONTEND_URL}/payment/simulate?paymentId=${transaction.documentId}`;
 
       // Simulate provider response
       const providerResponse = {
@@ -37,10 +37,23 @@ export default ({ strapi }) => ({
     }
   },
 
-  async verifyPayment(transaction) {
+  async verifyPayment(paymentId) {
     try {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const transactions = await strapi.entityService.findMany('api::transaction.transaction', {
+        filters: {
+          documentId: paymentId
+        },
+        populate: ['booking']
+      });
+
+      const transaction = transactions[0];
+
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
 
       // Simulate successful payment verification
       const response = {
@@ -49,7 +62,8 @@ export default ({ strapi }) => ({
         transactionId: transaction.transactionId,
         amount: transaction.amount,
         currency: transaction.currency,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        bookingId: transaction.booking.documentId
       };
 
       return {

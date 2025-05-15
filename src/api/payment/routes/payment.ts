@@ -10,6 +10,17 @@ export default {
           enabled: true
         },
       }
+    },
+    {
+      method: 'GET',
+      path: '/payment/verify/:transactionId',
+      handler: 'payment.verify',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
+        },
+      }
     }
   ]
 }; 

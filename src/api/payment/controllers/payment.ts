@@ -29,7 +29,6 @@ export default {
       if (!booking) {
         return ctx.badRequest('Booking not found');
       }
-      console.log('booking', booking.user);
       // Check if booking belongs to user
       if (booking.user.documentId !== userId) {
         return ctx.badRequest('Unauthorized');
@@ -92,14 +91,13 @@ export default {
       if (!paymentProvider) {
         return ctx.badRequest('Payment provider not available');
       }
-      console.log('paymentProvider', paymentProvider);
       // Initiate payment with provider
       const paymentResult = await paymentProvider.initiatePayment(payment);
 
       return {
         success: true,
         payment: {
-          id: payment.id,
+          id: payment.documentId,
           amount: payment.amount,
           status: payment.status,
           paymentUrl: paymentResult.paymentUrl
@@ -108,6 +106,50 @@ export default {
     } catch (error) {
       console.error('Payment initiation error:', error);
       return ctx.internalServerError('Error initiating payment');
+    }
+  },
+  async verify(ctx) {
+    try {
+      const { transactionId } = ctx.request.query;
+      const payment = await strapi.entityService.findOne('api::payment.payment', paymentId);
+      
+      if (!payment) {
+        return ctx.badRequest('Payment not found');
+      }
+
+      // Get payment provider service
+      let paymentProvider;
+      if (process.env.NODE_ENV === 'development' && payment.paymentMethod === 'telebirr') {
+        // Use simulator in development mode for TeleBirr
+        paymentProvider = strapi.service('api::payment.telebirr-simulator');
+      } else {
+        // Use real payment provider
+        switch (payment.paymentMethod) {
+          case 'telebirr':
+            paymentProvider = strapi.service('api::payment.telebirr');
+            break;
+          case 'cbe-birr':
+            paymentProvider = strapi.service('api::payment.cbe-birr');
+            break;
+          default:
+            return ctx.badRequest('Invalid payment method');
+        }
+      }
+
+      if (!paymentProvider) {
+        return ctx.badRequest('Payment provider not available');
+      }
+
+      // Verify payment with provider 
+      const paymentResult = await paymentProvider.verifyPayment(transactionId);
+
+      return {
+        success: true,
+        payment: paymentResult
+      };
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      return ctx.internalServerError('Error verifying payment');
     }
   }
 }; 
