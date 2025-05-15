@@ -89,7 +89,7 @@ export default ({ strapi }) => ({
       });
 
       // Update slot status to reserved
-      await strapi.entityService.update('api::slot.slot', slotId, {
+      await strapi.entityService.update('api::slot.slot', slot.id, {
         data: {
           slotStatus: 'reserved'
         }
@@ -127,13 +127,13 @@ export default ({ strapi }) => ({
       }
 
       // Update booking status
-      const updatedBooking = await strapi.entityService.update('api::booking.booking', bookingId, {
+      const updatedBooking = await strapi.entityService.update('api::booking.booking', booking.id, {
         data: { bookingStatus: status }
       });
 
       // If status changed to active, update slot status
       if (status === 'active') {
-        await strapi.entityService.update('api::slot.slot', booking.slot.documentId, {
+        await strapi.entityService.update('api::slot.slot', booking.slot.id, {
           data: {
             slotStatus: 'occupied'
           }

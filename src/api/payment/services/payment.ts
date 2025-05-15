@@ -34,7 +34,7 @@ export default ({ strapi }) => ({
       });
 
       // Update booking with transaction
-      await strapi.entityService.update('api::booking.booking', bookingId, {
+      await strapi.entityService.update('api::booking.booking', booking.id, {
         data: {
           paymentMethod,
           paymentStatus: 'pending',
@@ -106,7 +106,7 @@ export default ({ strapi }) => ({
 
       // Update booking status
       if (transaction.booking) {
-        await strapi.entityService.update('api::booking.booking', transaction.booking.documentId, {
+        await strapi.entityService.update('api::booking.booking', transaction.booking.id, {
           data: {
             paymentStatus: verificationResult.status === 'success' ? 'paid' : 'failed',
             bookingStatus: verificationResult.status === 'success' ? 'confirmed' : 'pending'

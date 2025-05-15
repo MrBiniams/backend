@@ -58,7 +58,9 @@ export default ({ strapi }) => ({
         transactionId: payment.transactionId,
         amount: payment.amount,
         currency: payment.currency,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        paymentMethod: "Telebirr-simulator",
+
       };
 
       return {

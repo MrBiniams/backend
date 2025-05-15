@@ -31,7 +31,7 @@ export default {
 
       const booking = bookings[0];
 
-      if (!booking) {
+      if (!booking || !booking.slot) {
         return ctx.badRequest('Booking not found');
       }
       // Check if booking belongs to user
@@ -67,8 +67,7 @@ export default {
           customerName: `${booking.user.firstname} ${booking.user.lastname}`,
           metadata: {
             bookingId,
-            slotId: booking.slot.id,
-            locationId: booking.slot.location?.id
+            slotId: booking.slot.documentId
           },
           publishedAt: new Date()
         }
@@ -153,6 +152,47 @@ export default {
 
       // Verify payment with provider 
       const paymentResult = await paymentProvider.verifyPayment(paymentId);
+
+      // If payment is successful, update related entities
+      if (paymentResult.status === 'success') {
+        // Update payment status
+        await strapi.entityService.update('api::payment.payment', payment.id, {
+          data: {
+            status: 'completed',
+            paymentProviderResponse: paymentResult.data
+          } as any
+        });
+
+        // Get booking with populated slot
+        const bookings = await strapi.entityService.findMany('api::booking.booking', {
+          filters: {
+            documentId: payment.booking
+          }
+        });
+
+        const booking = bookings[0];
+
+        if (booking) {
+          // Update booking status
+          await strapi.entityService.update('api::booking.booking', booking.id, {
+            data: {
+              bookingStatus: 'active',
+              paymentStatus: 'paid'
+            } as any,
+            populate: []
+          });
+
+          // Update slot status if it exists
+          if (booking.slot) {
+            await strapi.entityService.update('api::slot.slot', booking.slot.id, {
+              data: {
+                slotStatus: 'occupied'
+              } as any,
+              populate: []
+            });
+          }
+        }
+      }
 
       return {
         success: true,
