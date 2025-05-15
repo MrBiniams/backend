@@ -27,10 +27,24 @@ export default ({ strapi }) => ({
       // Check for existing active bookings with the same plate number
       const existingBookings = await strapi.entityService.findMany('api::booking.booking', {
         filters: {
-          plateNumber,
-          bookingStatus: {
-            $in: ['pending', 'confirmed', 'active']
-          }
+          $or: [
+            {
+              plateNumber,
+              bookingStatus: {
+                $in: ['confirmed', 'active']
+              },
+              endTime: {
+                $gt: new Date()
+              }
+            },
+            {
+              plateNumber,
+              bookingStatus: 'pending',
+              startTime: {
+                $gt: new Date(Date.now() - 3 * 60 * 1000) // 3 minutes ago
+              }
+            }
+          ]
         }
       });
 
