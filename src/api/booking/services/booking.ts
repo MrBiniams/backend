@@ -84,10 +84,9 @@ export default ({ strapi }) => ({
       }
 
       // Calculate total price
+      let totalPrice = parseInt(time) * slot.price;
       if (startDateTime) {
-        const totalPrice = (parseInt(time) + defaultHourAddedOnUpcomingBooking) * slot.price;
-      } else {
-        const totalPrice = parseInt(time) * slot.price;
+        totalPrice = (parseInt(time) + defaultHourAddedOnUpcomingBooking) * slot.price;
       }
 
       // Create booking
