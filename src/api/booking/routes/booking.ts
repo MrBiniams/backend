@@ -24,12 +24,12 @@ export default {
     },
     {
       method: 'GET',
-      path: '/bookings/me',
+      path: '/bookings/mybookings/me',
       handler: 'booking.findMyBookings',
       config: {
         policies: [],
         auth: {
-          enabled: true
+          strategy: 'api-token'
         }
       }
     },

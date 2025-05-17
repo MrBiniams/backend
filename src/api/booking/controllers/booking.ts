@@ -87,14 +87,27 @@ export default {
   },
   async findMyBookings(ctx) {
     try {
-      console.log("State:", ctx.state);
-      const userId = ctx.state.user?.id;
-      console.log("User ID:", userId);
-      ctx.params.userId = userId;
-      console.log("Context:", ctx);
-      return this.findByUser(ctx);
+      const userId = ctx.state.user?.documentId;
+      if (!userId) {
+        return ctx.unauthorized('User not authenticated');
+      }
+
+      const bookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          user: {
+            documentId: userId
+          },
+          bookingStatus: {
+            $in: ['active']
+          },
+          endTime: {
+            $gt: new Date()
+          }
+        },
+        populate: ['slot.location']
+      });
+      return { data: bookings };
     } catch (err) {
-      console.log("Error:", err.message);
       ctx.throw(500, err);
     }
   },
@@ -108,11 +121,10 @@ export default {
             id: userId
           }
         },
-        populate: ['slot', 'location']
+        populate: ['slot.location']
       });
       return { data: bookings };
     } catch (err) {
-      console.log("Error:", err.message);
       ctx.throw(500, err);
     }
   },
