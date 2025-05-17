@@ -132,16 +132,19 @@ export default {
           ? new Date(Math.max(...extendedBookings.map(ext => new Date(ext.endTime).getTime())))
           : booking.endTime;
 
+
         // Return the combined booking data
         const bookingData = {
           ...booking,
           totalPrice,
           endTime: latestEndTime,
+          bookingStatus: booking.bookingStatus === 'active' ? (new Date(booking.startTime) > new Date() ? 'upcoming' : 'active') : booking.bookingStatus,
           extendedBookings: extendedBookings.map(ext => ({
             id: ext.id,
             startTime: ext.startTime,
             endTime: ext.endTime,
             totalPrice: ext.totalPrice,
+            bookingStatus: ext.bookingStatus,
             paymentStatus: ext.paymentStatus
           }))
         };
