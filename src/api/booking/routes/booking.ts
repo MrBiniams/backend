@@ -99,5 +99,16 @@ export default {
         },
       },
     },
+    {
+      method: 'POST',
+      path: '/bookings/:documentId/extend',
+      handler: 'booking.extend',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
+        },
+      },
+    },
   ],
 }; 

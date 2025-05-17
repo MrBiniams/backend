@@ -74,6 +74,18 @@
       "relation": "oneToOne",
       "target": "api::transaction.transaction",
       "mappedBy": "booking"
+    },
+    "originalBooking": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::booking.booking",
+      "inversedBy": "extendedBookings"
+    },
+    "extendedBookings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::booking.booking",
+      "mappedBy": "originalBooking"
     }
   }
 }

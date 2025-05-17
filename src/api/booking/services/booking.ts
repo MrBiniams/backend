@@ -102,13 +102,6 @@ export default ({ strapi }) => ({
         }
       });
 
-      // Update slot status to reserved
-      await strapi.entityService.update('api::slot.slot', slot.id, {
-        data: {
-          slotStatus: 'reserved',
-          publishedAt: new Date()
-        }
-      });
 
       return {
         success: true,
@@ -166,6 +159,98 @@ export default ({ strapi }) => ({
     } catch (error) {
       console.error('Booking status update error:', error);
       return ctx.badRequest(error.message);
+    }
+  },
+
+  async extendBooking(ctx) {
+    try {
+      const { documentId } = ctx.params;
+      const { extendedTime, slotId } = ctx.request.body;
+      const userId = ctx.state.user.documentId;
+
+      // Validate required fields
+      if (!extendedTime || !slotId) {
+        return {
+          error: 'Missing extended time or slot ID',
+          status: 400
+        };
+      }
+
+      // Validate extended time (1-24 hours)
+      const duration = parseInt(extendedTime);
+      if (isNaN(duration) || duration < 1 || duration > 24) {
+        return {
+          error: 'Invalid duration. Must be between 1 and 24 hours',
+          status: 400
+        };
+      }
+
+      // Get the original booking
+      const bookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          documentId: documentId
+        }
+      });
+
+      const originalBooking = bookings[0] || null;
+
+      if (!originalBooking) {
+        return {
+          error: 'Booking not found',
+          status: 404
+        };
+      }
+
+      // Check if the booking belongs to the user
+      if (originalBooking.user.documentId !== userId) {
+        return {
+          error: 'Unauthorized to extend this booking',
+          status: 403
+        };
+      }
+
+      // Check if the booking is active
+      if (originalBooking.bookingStatus !== 'active') {
+        return {
+          error: 'Can only extend active bookings',
+          status: 400
+        };
+      }
+
+      // Calculate new end time
+      const newEndTime = new Date(originalBooking.endTime);
+      newEndTime.setHours(newEndTime.getHours() + duration);
+
+      // Calculate additional price
+      const additionalPrice = duration * originalBooking.slot.price;
+
+      // Create extended booking
+      const extendedBooking = await strapi.entityService.create('api::booking.booking', {
+        data: {
+          plateNumber: originalBooking.plateNumber,
+          slot: originalBooking.slot.id,
+          startTime: originalBooking.endTime,
+          endTime: newEndTime,
+          duration,
+          totalPrice: additionalPrice,
+          bookingStatus: 'active',
+          paymentStatus: 'pending',
+          user: userId,
+          originalBooking: documentId
+        }
+      });
+
+
+      return {
+        success: true,
+        booking: extendedBooking
+      };
+    } catch (error) {
+      console.error('Error extending booking:', error);
+      return {
+        error: 'Failed to extend booking',
+        status: 500
+      };
     }
   }
 }); 

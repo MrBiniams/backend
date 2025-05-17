@@ -12,6 +12,15 @@ export default {
     }
   },
 
+  async extend(ctx) {
+    try {
+      const result = await strapi.service('api::booking.booking').extendBooking(ctx);
+      return result;
+    } catch (error) {
+      return ctx.badRequest(error.message);
+    }
+  },
+
   async updateStatus(ctx) {
     try {
       const { id } = ctx.params;
@@ -92,7 +101,8 @@ export default {
         return ctx.unauthorized('User not authenticated');
       }
 
-      const bookings = await strapi.entityService.findMany('api::booking.booking', {
+      // First get all original bookings that are active
+      const originalBookings = await strapi.entityService.findMany('api::booking.booking', {
         filters: {
           user: {
             documentId: userId
@@ -102,11 +112,50 @@ export default {
           },
           endTime: {
             $gt: new Date()
+          },
+          originalBooking: {
+            $null: true
           }
         },
-        populate: ['slot.location']
+        populate: ['slot.location', 'extendedBookings']
       });
-      return { data: bookings };
+
+      // Process each original booking to combine with its extensions
+      const processedBookings = await Promise.all(originalBookings.map(async (booking) => {
+        // Get all extended bookings for this original booking
+        const extendedBookings = await strapi.entityService.findMany('api::booking.booking', {
+          filters: {
+            originalBooking: booking.id,
+            bookingStatus: 'active',
+            paymentStatus: 'paid'
+          },
+          sort: { startTime: 'asc' }
+        });
+
+        // Calculate total price
+        const totalPrice = extendedBookings.reduce((sum, ext) => sum + (ext.totalPrice || 0), booking.totalPrice || 0);
+
+        // Find the latest end time from all extended bookings
+        const latestEndTime = extendedBookings.length > 0 
+          ? new Date(Math.max(...extendedBookings.map(ext => new Date(ext.endTime).getTime())))
+          : booking.endTime;
+
+        // Return the combined booking data
+        return {
+          ...booking,
+          totalPrice,
+          endTime: latestEndTime,
+          extendedBookings: extendedBookings.map(ext => ({
+            id: ext.id,
+            startTime: ext.startTime,
+            endTime: ext.endTime,
+            totalPrice: ext.totalPrice,
+            paymentStatus: ext.paymentStatus
+          }))
+        };
+      }));
+
+      return { data: processedBookings };
     } catch (err) {
       ctx.throw(500, err);
     }
