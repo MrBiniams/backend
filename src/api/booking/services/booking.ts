@@ -84,7 +84,11 @@ export default ({ strapi }) => ({
       }
 
       // Calculate total price
-      const totalPrice = (parseInt(time) + defaultHourAddedOnUpcomingBooking) * slot.price;
+      if (startDateTime) {
+        const totalPrice = (parseInt(time) + defaultHourAddedOnUpcomingBooking) * slot.price;
+      } else {
+        const totalPrice = parseInt(time) * slot.price;
+      }
 
       // Create booking
       const booking = await strapi.entityService.create('api::booking.booking', {
