@@ -17,21 +17,59 @@ export default factories.createCoreController('api::slot.slot', ({ strapi }) => 
     return { data, meta };
   },
 
-  async create(ctx) {
-    // Add custom logic here if needed
-    const response = await super.create(ctx);
-    return response;
+  async findByLocation(ctx) {
+    try {
+      const { locationId } = ctx.params;
+      const slots = await strapi.entityService.findMany('api::slot.slot', {
+        filters: {
+          location: {
+            documentId: locationId
+          }
+        },
+        populate: ['currentBooking', 'coordinates']
+      });
+      return { data: slots };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
   },
 
-  async update(ctx) {
-    // Add custom logic here if needed
-    const response = await super.update(ctx);
-    return response;
+  async findAvailable(ctx) {
+    try {
+      const slots = await strapi.entityService.findMany('api::slot.slot', {
+        filters: {
+          slotStatus: 'available'
+        },
+        populate: ['location', 'coordinates']
+      });
+      return { data: slots };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
   },
 
-  async delete(ctx) {
-    // Add custom logic here if needed
-    const response = await super.delete(ctx);
-    return response;
-  }
+  async updateStatus(ctx) {
+    try {
+      const { id } = ctx.params;
+      const { status } = ctx.request.body;
+
+      const slot = await strapi.entityService.update('api::slot.slot', id, {
+        data: {
+          slotStatus: status
+        } as any,
+        populate: ['location', 'currentBooking', 'coordinates']
+      });
+
+      // Emit socket event for real-time updates
+      strapi.service('api::socket.socket').emit(
+        'slot-status-updated',
+        slot.location.documentId,
+        slot
+      );
+
+      return { data: slot };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
+  },
 })); 

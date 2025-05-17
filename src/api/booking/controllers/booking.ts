@@ -2,8 +2,6 @@
  * booking controller
  */
 
-import { factories } from '@strapi/strapi';
-
 export default {
   async create(ctx) {
     try {
@@ -16,10 +14,26 @@ export default {
 
   async updateStatus(ctx) {
     try {
-      const result = await strapi.service('api::booking.booking').updateBookingStatus(ctx);
-      return result;
-    } catch (error) {
-      return ctx.badRequest(error.message);
+      const { id } = ctx.params;
+      const { status } = ctx.request.body;
+
+      const booking = await strapi.entityService.update('api::booking.booking', id, {
+        data: {
+          bookingStatus: status
+        } as any,
+        populate: ['user', 'slot', 'location']
+      });
+
+      // Emit socket event for real-time updates
+      strapi.service('api::socket.socket').emit(
+        'booking-status-updated',
+        booking.location.documentId,
+        booking
+      );
+
+      return { data: booking };
+    } catch (err) {
+      ctx.throw(500, err);
     }
   },
 
@@ -70,5 +84,53 @@ export default {
     }
 
     return response;
+  },
+  async findMyBookings(ctx) {
+    try {
+      console.log("State:", ctx.state);
+      const userId = ctx.state.user?.id;
+      console.log("User ID:", userId);
+      ctx.params.userId = userId;
+      console.log("Context:", ctx);
+      return this.findByUser(ctx);
+    } catch (err) {
+      console.log("Error:", err.message);
+      ctx.throw(500, err);
+    }
+  },
+
+  async findByUser(ctx) {
+    try {
+      const { userId } = ctx.params;
+      const bookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          user: {
+            id: userId
+          }
+        },
+        populate: ['slot', 'location']
+      });
+      return { data: bookings };
+    } catch (err) {
+      console.log("Error:", err.message);
+      ctx.throw(500, err);
+    }
+  },
+
+  async findBySlot(ctx) {
+    try {
+      const { slotId } = ctx.params;
+      const bookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          slot: {
+            id: slotId
+          }
+        },
+        populate: ['user', 'location']
+      });
+      return { data: bookings };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
   },
 }; 

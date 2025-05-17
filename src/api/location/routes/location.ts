@@ -2,34 +2,40 @@ export default {
   routes: [
     {
       method: 'GET',
-      path: '/location',
+      path: '/locations',
       handler: 'location.find',
       config: {
         policies: [],
         auth: {
-          enabled: false
+          enabled: true
         },
       },
     },
     {
       method: 'GET',
-      path: '/location/:id',
+      path: '/locations/:id',
       handler: 'location.findOne',
       config: {
         policies: [],
         auth: {
-          enabled: false
+          enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
+      },
+    },
+    {
+      method: 'GET',
+      path: '/locations/:id/slots',
+      handler: 'location.findSlots',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
         },
       },
     },
     {
       method: 'POST',
-      path: '/location',
+      path: '/locations',
       handler: 'location.create',
       config: {
         policies: [],
@@ -40,33 +46,23 @@ export default {
     },
     {
       method: 'PUT',
-      path: '/location/:id',
+      path: '/locations/:id',
       handler: 'location.update',
       config: {
         policies: [],
         auth: {
           enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
-        },
       },
     },
     {
       method: 'DELETE',
-      path: '/location/:id',
+      path: '/locations/:id',
       handler: 'location.delete',
       config: {
         policies: [],
         auth: {
           enabled: true
-        },
-        params: {
-          id: {
-            type: 'uuid',
-          },
         },
       },
     },

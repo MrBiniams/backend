@@ -2,7 +2,7 @@ export default {
   routes: [
     {
       method: 'GET',
-      path: '/booking',
+      path: '/bookings',
       handler: 'booking.find',
       config: {
         policies: [],
@@ -13,23 +13,51 @@ export default {
     },
     {
       method: 'GET',
-      path: '/booking/:id',
+      path: '/bookings/:id',
       handler: 'booking.findOne',
       config: {
         policies: [],
         auth: {
           enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
+      },
+    },
+    {
+      method: 'GET',
+      path: '/bookings/me',
+      handler: 'booking.findMyBookings',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
+        }
+      }
+    },
+    {
+      method: 'GET',
+      path: '/bookings/user/:userId',
+      handler: 'booking.findByUser',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
+        },
+      },
+    },
+    {
+      method: 'GET',
+      path: '/bookings/slot/:slotId',
+      handler: 'booking.findBySlot',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
         },
       },
     },
     {
       method: 'POST',
-      path: '/booking',
+      path: '/bookings',
       handler: 'booking.create',
       config: {
         policies: [],
@@ -40,44 +68,34 @@ export default {
     },
     {
       method: 'PUT',
-      path: '/booking/:id/status',
-      handler: 'booking.updateStatus',
-      config: {
-        policies: [],
-        auth: {
-          enabled: false
-        },
-      },
-    },
-    {
-      method: 'PUT',
-      path: '/booking/:id',
+      path: '/bookings/:id',
       handler: 'booking.update',
       config: {
         policies: [],
         auth: {
           enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
-        },
       },
     },
     {
-      method: 'DELETE',
-      path: '/booking/:id',
-      handler: 'booking.delete',
+      method: 'PUT',
+      path: '/bookings/:id/status',
+      handler: 'booking.updateStatus',
       config: {
         policies: [],
         auth: {
           enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
+      },
+    },
+    {
+      method: 'DELETE',
+      path: '/bookings/:id',
+      handler: 'booking.delete',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
         },
       },
     },

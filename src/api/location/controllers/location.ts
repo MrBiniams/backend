@@ -6,9 +6,12 @@ import { factories } from '@strapi/strapi'
 
 export default factories.createCoreController('api::location.location', ({ strapi }) => ({
   async find(ctx) {
-    // Add custom logic here if needed
-    const { data, meta } = await super.find(ctx);
-    return { data, meta };
+    // return meta and data
+    const locations = await strapi.entityService.findMany('api::location.location', {
+      populate: ['coordinates']
+    });
+
+    return { data: locations };
   },
 
   async findOne(ctx) {
@@ -33,5 +36,31 @@ export default factories.createCoreController('api::location.location', ({ strap
     // Add custom logic here if needed
     const response = await super.delete(ctx);
     return response;
-  }
+  },
+  async findSlots(ctx) {
+    try {
+      const { id } = ctx.params;
+      const slots = await strapi.entityService.findMany('api::slot.slot', {
+        filters: {
+          location: {
+            id: id
+          }
+        },
+        populate: ['currentBooking', 'coordinates']
+      });
+      return { data: slots };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
+  },
+  async findAll(ctx) {
+    try {
+      const locations = await strapi.entityService.findMany('api::location.location', {
+        populate: ['coordinates']
+      });
+      return { data: locations };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
+  } 
 })); 

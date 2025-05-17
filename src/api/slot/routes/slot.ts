@@ -2,34 +2,51 @@ export default {
   routes: [
     {
       method: 'GET',
-      path: '/slot',
+      path: '/slots',
       handler: 'slot.find',
       config: {
         policies: [],
         auth: {
-          enabled: false
+          enabled: true
         },
       },
     },
     {
       method: 'GET',
-      path: '/slot/:id',
+      path: '/slots/:id',
       handler: 'slot.findOne',
       config: {
         policies: [],
         auth: {
-          enabled: false
+          enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
+      },
+    },
+    {
+      method: 'GET',
+      path: '/slots/location/:locationId',
+      handler: 'slot.findByLocation',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
+        },
+      },
+    },
+    {
+      method: 'GET',
+      path: '/slots/available',
+      handler: 'slot.findAvailable',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
         },
       },
     },
     {
       method: 'POST',
-      path: '/slot',
+      path: '/slots',
       handler: 'slot.create',
       config: {
         policies: [],
@@ -40,33 +57,34 @@ export default {
     },
     {
       method: 'PUT',
-      path: '/slot/:id',
+      path: '/slots/:id',
       handler: 'slot.update',
       config: {
         policies: [],
         auth: {
           enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
-        },
       },
     },
     {
-      method: 'DELETE',
-      path: '/slot/:id',
-      handler: 'slot.delete',
+      method: 'PUT',
+      path: '/slots/:id/status',
+      handler: 'slot.updateStatus',
       config: {
         policies: [],
         auth: {
           enabled: true
         },
-        params: {
-          id: {
-            type: 'uuid',
-          },
+      },
+    },
+    {
+      method: 'DELETE',
+      path: '/slots/:id',
+      handler: 'slot.delete',
+      config: {
+        policies: [],
+        auth: {
+          enabled: true
         },
       },
     },
