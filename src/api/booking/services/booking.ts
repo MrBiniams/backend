@@ -189,7 +189,8 @@ export default ({ strapi }) => ({
       const bookings = await strapi.entityService.findMany('api::booking.booking', {
         filters: {
           documentId: documentId
-        }
+        },
+        populate: ['slot', 'user']
       });
 
       const originalBooking = bookings[0] || null;
@@ -200,9 +201,9 @@ export default ({ strapi }) => ({
           status: 404
         };
       }
-
+      
       // Check if the booking belongs to the user
-      if (originalBooking.user.documentId !== userId) {
+      if (originalBooking.user?.documentId !== userId) {
         return {
           error: 'Unauthorized to extend this booking',
           status: 403
