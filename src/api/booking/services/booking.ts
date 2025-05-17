@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi';
-
+const defaultHourAddedOnUpcomingBooking = 1;
 export default ({ strapi }) => ({
   async createBooking(ctx) {
     try {
@@ -31,7 +31,8 @@ export default ({ strapi }) => ({
             status: 400
           };
         }
-        startTime = providedStartTime;
+        // Now start time should start from 1 hour before the provided start time
+        startTime = new Date(providedStartTime.getTime() - defaultHourAddedOnUpcomingBooking * 60 * 60 * 1000);
       }
 
       // Calculate end time based on hours
@@ -83,7 +84,7 @@ export default ({ strapi }) => ({
       }
 
       // Calculate total price
-      const totalPrice = parseInt(time) * slot.price;
+      const totalPrice = (parseInt(time) + defaultHourAddedOnUpcomingBooking) * slot.price;
 
       // Create booking
       const booking = await strapi.entityService.create('api::booking.booking', {
