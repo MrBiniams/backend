@@ -121,16 +121,8 @@ export default {
       });
 
       // Process each original booking to combine with its extensions
-      const processedBookings = await Promise.all(originalBookings.map(async (booking) => {
-        // Get all extended bookings for this original booking
-        const extendedBookings = await strapi.entityService.findMany('api::booking.booking', {
-          filters: {
-            originalBooking: booking.id,
-            bookingStatus: 'active',
-            paymentStatus: 'paid'
-          },
-          sort: { startTime: 'asc' }
-        });
+      const processedBookings = originalBookings.map((booking) => {
+        const extendedBookings = booking.extendedBookings;
 
         // Calculate total price
         const totalPrice = extendedBookings.reduce((sum, ext) => sum + (ext.totalPrice || 0), booking.totalPrice || 0);
@@ -141,7 +133,7 @@ export default {
           : booking.endTime;
 
         // Return the combined booking data
-        return {
+        const bookingData = {
           ...booking,
           totalPrice,
           endTime: latestEndTime,
@@ -153,7 +145,9 @@ export default {
             paymentStatus: ext.paymentStatus
           }))
         };
-      }));
+
+        return bookingData;
+      });
 
       return { data: processedBookings };
     } catch (err) {
