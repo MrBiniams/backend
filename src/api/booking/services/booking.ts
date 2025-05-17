@@ -185,12 +185,12 @@ export default ({ strapi }) => ({
         };
       }
 
-      // Get the original booking
+      // Get the original booking with its extended bookings
       const bookings = await strapi.entityService.findMany('api::booking.booking', {
         filters: {
           documentId: documentId
         },
-        populate: ['slot', 'user']
+        populate: ['slot', 'user', 'extendedBookings']
       });
 
       const originalBooking = bookings[0] || null;
@@ -218,8 +218,16 @@ export default ({ strapi }) => ({
         };
       }
 
+      // Find the last extended booking if it exists
+      const lastExtendedBooking = originalBooking.extendedBookings?.length 
+        ? originalBooking.extendedBookings[originalBooking.extendedBookings.length - 1]
+        : null;
+
+      // Use the last extended booking's end time if it exists, otherwise use the original booking's end time
+      const startTime = lastExtendedBooking ? new Date(lastExtendedBooking.endTime) : new Date(originalBooking.endTime);
+      
       // Calculate new end time
-      const newEndTime = new Date(originalBooking.endTime);
+      const newEndTime = new Date(startTime);
       newEndTime.setHours(newEndTime.getHours() + duration);
 
       // Calculate additional price
@@ -230,7 +238,7 @@ export default ({ strapi }) => ({
         data: {
           plateNumber: originalBooking.plateNumber,
           slot: originalBooking.slot.id,
-          startTime: originalBooking.endTime,
+          startTime: startTime,
           endTime: newEndTime,
           duration,
           totalPrice: additionalPrice,
@@ -240,7 +248,6 @@ export default ({ strapi }) => ({
           originalBooking: documentId
         }
       });
-
 
       return {
         success: true,
