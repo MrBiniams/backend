@@ -3,9 +3,15 @@ import { factories } from '@strapi/strapi';
 export default ({ strapi }) => ({
   async createBooking(ctx) {
     try {
-      const { plateNumber, slotId, time } = ctx.request.body;
+      const { plateNumber, slotId, time, startDateTime } = ctx.request.body;
       const userId = ctx.state.user.documentId;
 
+      if (!userId) {
+        return {
+          error: 'Unauthorized',
+          status: 401
+        };
+      }
 
       // Validate required fields
       if (!plateNumber || !slotId || !time) {
@@ -15,47 +21,23 @@ export default ({ strapi }) => ({
         };
       }
 
-      // Validate time (1-24 hours)
-      const duration = parseInt(time);
-      if (isNaN(duration) || duration < 1 || duration > 24) {
-        return {
-          error: 'Invalid duration. Must be between 1 and 24 hours',
-          status: 400
-        };
-      }
-
-      // Check for existing active bookings with the same plate number
-      const existingBookings = await strapi.entityService.findMany('api::booking.booking', {
-        filters: {
-          $or: [
-            {
-              plateNumber,
-              bookingStatus: {
-                $in: ['confirmed', 'active']
-              },
-              endTime: {
-                $gt: new Date()
-              }
-            },
-            {
-              plateNumber,
-              bookingStatus: 'pending',
-              startTime: {
-                $gt: new Date(Date.now() - 3 * 60 * 1000) // 3 minutes ago
-              }
-            }
-          ]
+      // Validate startDateTime if provided
+      let startTime = new Date();
+      if (startDateTime) {
+        const providedStartTime = new Date(startDateTime);
+        if (providedStartTime < startTime) {
+          return {
+            error: 'Start time must be in the future',
+            status: 400
+          };
         }
-      });
-
-      if (existingBookings.length > 0) {
-        return {
-          error: 'This plate number already has an active booking',
-          status: 400
-        };
+        startTime = providedStartTime;
       }
 
-      // Check if slot exists and is available
+      // Calculate end time based on hours
+      const endTime = new Date(startTime.getTime() + parseInt(time) * 60 * 60 * 1000);
+
+      // Get slot details
       const slots = await strapi.entityService.findMany('api::slot.slot', {
         filters: {
           documentId: slotId,
@@ -72,20 +54,36 @@ export default ({ strapi }) => ({
         };
       }
 
-      // Check if slot is available
-      if (slot.slotStatus !== 'available') {
+      // Check if slot is available for the requested time period
+      const existingBookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          slot: slotId,
+          $or: [
+            {
+              $and: [
+                { startTime: { lte: startTime } },
+                { endTime: { gt: startTime } }
+              ]
+            },
+            {
+              $and: [
+                { startTime: { lt: endTime } },
+                { endTime: { gte: endTime } }
+              ]
+            }
+          ]
+        }
+      });
+
+      if (existingBookings.length > 0) {
         return {
-          error: 'Slot is not available',
+          error: 'Slot is not available for the selected time period',
           status: 400
         };
       }
 
-      // Calculate start and end times
-      const startTime = new Date();
-      const endTime = new Date(startTime.getTime() + duration * 60 * 60 * 1000);
-
       // Calculate total price
-      const totalPrice = duration * slot.price;
+      const totalPrice = parseInt(time) * slot.price;
 
       // Create booking
       const booking = await strapi.entityService.create('api::booking.booking', {
@@ -94,7 +92,7 @@ export default ({ strapi }) => ({
           slot: slotId,
           startTime,
           endTime,
-          duration,
+          duration: parseInt(time),
           totalPrice,
           bookingStatus: 'pending',
           paymentStatus: 'pending',
@@ -102,17 +100,13 @@ export default ({ strapi }) => ({
         }
       });
 
-
       return {
         success: true,
         booking
       };
     } catch (error) {
-      console.error('Error deleting booking:', error);
-      return {
-        error: 'Failed to delete booking',
-        status: 500
-      };
+      console.error('Error creating booking:', error);
+      return ctx.status(500).json({ message: 'Error creating booking' });
     }
   },
 
