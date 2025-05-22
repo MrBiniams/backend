@@ -88,7 +88,8 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
         gender: user.gender,
-        role: user.role
+        role: user.role,
+        userSettings: user.userSettings
       };
 
       ctx.body = {
@@ -159,7 +160,8 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
         gender: user.gender,
-        role: user.role
+        role: user.role,
+        userSettings: user.userSettings
       };
 
       ctx.body = {
@@ -192,7 +194,8 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
         gender: user.gender,
-        role: user.role
+        role: user.role,
+        userSettings: user.userSettings
       };
 
       ctx.body = sanitizedUser;
@@ -223,7 +226,8 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         firstName: response.data.firstName,
         lastName: response.data.lastName,
         gender: response.data.gender,
-        role: response.data.role
+        role: response.data.role,
+        userSettings: response.data.userSettings
       };
 
       ctx.body = sanitizedUser;
