@@ -66,7 +66,7 @@ export default {
         firstName: strapiUser.firstName,
         lastName: strapiUser.lastName,
         phoneNumber: strapiUser.phoneNumber,
-        role: []
+        role: {}
       };
 
       return {
@@ -197,7 +197,7 @@ export default {
         firstName: strapiUser.firstName,
         lastName: strapiUser.lastName,
         phoneNumber: strapiUser.phoneNumber,
-        role: []
+        role: {}
       };
 
       return {
