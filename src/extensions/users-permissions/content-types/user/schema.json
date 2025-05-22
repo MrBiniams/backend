@@ -96,6 +96,26 @@
       ],
       "required": true,
       "default": "male"
+    },
+    "userSettings": {
+      "type": "json",
+      "default": {
+        "emailNotifications": {
+          "title": "Email Notifications",
+          "description": "Receive email notifications for your bookings and other activities",
+          "value": true
+        },
+        "smsNotifications": {
+          "title": "SMS Notifications",
+          "description": "Receive SMS notifications for your bookings and other activities",
+          "value": true
+        },
+        "pushNotifications": {
+          "title": "Push Notifications",
+          "description": "Receive push notifications for your bookings and other activities",
+          "value": true
+        }
+      }
     }
   }
 }
