@@ -180,7 +180,8 @@ export default {
             { documentId: decodedToken.documentId },
             { phoneNumber: decodedToken.phoneNumber }
           ]
-        }
+        },
+        populate: ['role']
       });
 
       const strapiUser = users?.[0];
@@ -197,7 +198,7 @@ export default {
         firstName: strapiUser.firstName,
         lastName: strapiUser.lastName,
         phoneNumber: strapiUser.phoneNumber,
-        role: {}
+        role: strapiUser.role
       };
 
       return {
