@@ -87,6 +87,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         firstName: user.firstName,
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
+        gender: user.gender,
         role: user.role
       };
 
@@ -157,6 +158,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         firstName: user.firstName,
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
+        gender: user.gender,
         role: user.role
       };
 
@@ -189,6 +191,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         firstName: user.firstName,
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
+        gender: user.gender,
         role: user.role
       };
 
@@ -219,6 +222,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         phoneNumber: response.data.phoneNumber,
         firstName: response.data.firstName,
         lastName: response.data.lastName,
+        gender: response.data.gender,
         role: response.data.role
       };
 
