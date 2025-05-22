@@ -81,6 +81,12 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::location.location"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
     }
   }
 }
