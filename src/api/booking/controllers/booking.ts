@@ -191,4 +191,50 @@ export default {
       ctx.throw(500, err);
     }
   },
+
+  async findAttendantBookings(ctx) {
+    try {
+      const attendantId = ctx.state.user.documentId;
+      const { locationId } = ctx.params;
+
+      if (!attendantId) {
+        return ctx.unauthorized('Unauthorized');
+      }
+
+      // Get attendant details
+      const attendant = await strapi.entityService.findOne('plugin::users-permissions.user', attendantId, {
+        populate: ['role'],
+      });
+
+      if (attendant.role.name !== 'Attendant') {
+        return ctx.forbidden('Only attendants can access this endpoint');
+      }
+
+      // Get bookings for the specified location
+      const bookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          slot: {
+            location: {
+              id: locationId
+            }
+          }
+        },
+        populate: ['user', 'slot', 'location'],
+        sort: { startTime: 'desc' }
+      });
+
+      return { data: bookings };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
+  },
+
+  async createAttendantBooking(ctx) {
+    try {
+      const result = await strapi.service('api::booking.booking').createAttendantBooking(ctx);
+      return result;
+    } catch (err) {
+      ctx.throw(500, err);
+    }
+  }
 }; 

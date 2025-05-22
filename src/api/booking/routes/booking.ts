@@ -110,5 +110,21 @@ export default {
         },
       },
     },
+    {
+      method: 'GET',
+      path: '/bookings/attendant/:locationId',
+      handler: 'booking.findAttendantBookings',
+      config: {
+        policies: ['api::global.is-authenticated'],
+      },
+    },
+    {
+      method: 'POST',
+      path: '/bookings/attendant',
+      handler: 'booking.createAttendantBooking',
+      config: {
+        policies: ['api::global.is-authenticated'],
+      },
+    },
   ],
 }; 

@@ -258,5 +258,154 @@ export default ({ strapi }) => ({
         status: 500
       };
     }
+  },
+
+  async createAttendantBooking(ctx) {
+    try {
+      const { plateNumber, slotId, time, startDateTime, phoneNumber } = ctx.request.body;
+      const attendantId = ctx.state.user.documentId;
+
+      if (!attendantId) {
+        return {
+          error: 'Unauthorized',
+          status: 401
+        };
+      }
+
+      // Validate required fields
+      if (!plateNumber || !slotId || !time || !phoneNumber) {
+        return {
+          error: 'Missing required fields',
+          status: 400
+        };
+      }
+
+      // Get slot details
+      const slots = await strapi.entityService.findMany('api::slot.slot', {
+        filters: {
+          documentId: slotId,
+        },
+        populate: ['location'],
+      });
+
+      const slot = slots[0] || null;
+
+      if (!slot) {
+        return {
+          error: 'Slot not found',
+          status: 404
+        };
+      }
+
+      // Check if attendant has access to this location
+      const attendant = await strapi.entityService.findOne('plugin::users-permissions.user', attendantId, {
+        populate: ['role'],
+      });
+
+      if (attendant.role.name !== 'Attendant') {
+        return {
+          error: 'Only attendants can create bookings for others',
+          status: 403
+        };
+      }
+
+      // Find or create user with phone number
+      let user = await strapi.entityService.findMany('plugin::users-permissions.user', {
+        filters: {
+          phoneNumber: phoneNumber
+        }
+      });
+
+      if (user.length === 0) {
+        // Create new user with phone number
+        user = await strapi.entityService.create('plugin::users-permissions.user', {
+          data: {
+            username: `user_${phoneNumber}`,
+            email: `${phoneNumber}@temp.com`,
+            phoneNumber: phoneNumber,
+            provider: 'local',
+            role: 2, // Default authenticated role
+            confirmed: true,
+            blocked: false,
+          }
+        });
+      } else {
+        user = user[0];
+      }
+
+      // Validate startDateTime if provided
+      let startTime = new Date();
+      if (startDateTime) {
+        const providedStartTime = new Date(startDateTime);
+        if (providedStartTime < startTime) {
+          return {
+            error: 'Start time must be in the future',
+            status: 400
+          };
+        }
+        startTime = new Date(providedStartTime.getTime() - defaultHourAddedOnUpcomingBooking * 60 * 60 * 1000);
+      }
+
+      // Calculate end time based on hours
+      const endTime = new Date(startTime.getTime() + parseInt(time) * 60 * 60 * 1000);
+
+      // Check if slot is available for the requested time period
+      const existingBookings = await strapi.entityService.findMany('api::booking.booking', {
+        filters: {
+          slot: slotId,
+          $or: [
+            {
+              $and: [
+                { startTime: { lte: startTime } },
+                { endTime: { gt: startTime } }
+              ]
+            },
+            {
+              $and: [
+                { startTime: { lt: endTime } },
+                { endTime: { gte: endTime } }
+              ]
+            }
+          ]
+        }
+      });
+
+      if (existingBookings.length > 0) {
+        return {
+          error: 'Slot is not available for the selected time period',
+          status: 400
+        };
+      }
+
+      // Calculate total price
+      let totalPrice = parseInt(time) * slot.price;
+      if (startDateTime) {
+        totalPrice = (parseInt(time) + defaultHourAddedOnUpcomingBooking) * slot.price;
+      }
+
+      // Create booking
+      const booking = await strapi.entityService.create('api::booking.booking', {
+        data: {
+          plateNumber,
+          slot: slotId,
+          startTime,
+          endTime,
+          duration: parseInt(time),
+          totalPrice,
+          bookingStatus: 'pending',
+          paymentStatus: 'pending',
+          user: user.id,
+          attendantUser: attendantId
+        }
+      });
+
+      return {
+        success: true,
+        booking
+      };
+    } catch (error) {
+      console.error('Error creating attendant booking:', error);
+      return ctx.status(500).json({ message: 'Error creating booking' });
+    }
   }
 }); 

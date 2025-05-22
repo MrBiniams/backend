@@ -69,12 +69,6 @@
       "target": "api::slot.slot",
       "mappedBy": "location"
     },
-    "bookings": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::booking.booking",
-      "mappedBy": "location"
-    },
     "totalSlots": {
       "type": "integer",
       "required": true,

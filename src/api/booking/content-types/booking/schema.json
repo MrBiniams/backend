@@ -22,12 +22,6 @@
       "relation": "oneToOne",
       "target": "api::slot.slot"
     },
-    "location": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::location.location",
-      "inversedBy": "bookings"
-    },
     "startTime": {
       "type": "datetime",
       "required": true
@@ -86,6 +80,12 @@
       "relation": "oneToMany",
       "target": "api::booking.booking",
       "mappedBy": "originalBooking"
+    },
+    "attendantUser": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "private": true
     }
   }
 }

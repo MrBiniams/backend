@@ -32,5 +32,24 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/auth/attendant-login',
+      handler: 'auth.attendantLogin',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
+      path: '/auth/attendant/change-password',
+      handler: 'auth.changeAttendantPassword',
+      config: {
+        auth: {
+          strategy: 'jwt',
+          scope: ['users-permissions']
+        },
+      },
+    },
   ],
 }; 

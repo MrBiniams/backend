@@ -66,7 +66,7 @@ export default {
         firstName: strapiUser.firstName,
         lastName: strapiUser.lastName,
         phoneNumber: strapiUser.phoneNumber,
-        role: strapiUser.role
+        role: []
       };
 
       return {
@@ -197,7 +197,7 @@ export default {
         firstName: strapiUser.firstName,
         lastName: strapiUser.lastName,
         phoneNumber: strapiUser.phoneNumber,
-        role: strapiUser.role
+        role: []
       };
 
       return {
@@ -210,4 +210,118 @@ export default {
       return ctx.unauthorized('Invalid token');
     }
   },
+
+  async attendantLogin(ctx) {
+    try {
+      const { identifier, password } = ctx.request.body;
+
+      if (!identifier || !password) {
+        return ctx.badRequest('Please provide both identifier and password');
+      }
+
+      // Find the user using entity service
+      const users = await strapi.entityService.findMany('plugin::users-permissions.user', {
+        filters: {
+          $or: [
+            { email: identifier },
+            { username: identifier },
+            { phoneNumber: identifier }
+          ]
+        },
+        populate: ['role']
+      });
+
+      const user = users?.[0];
+
+      if (!user) {
+        return ctx.unauthorized('Invalid credentials');
+      }
+
+      // Check if user is an Attendant
+      if (user.role?.name !== 'Attendant') {
+        return ctx.unauthorized('Only attendants can access this login');
+      }
+
+      // Verify password
+      const validPassword = await strapi.plugins['users-permissions'].services.user.validatePassword(password, user.password);
+      if (!validPassword) {
+        return ctx.unauthorized('Invalid credentials');
+      }
+
+      // Generate JWT token
+      const token = strapi.plugins['users-permissions'].services.jwt.issue({
+        id: user.id,
+        documentId: user.documentId,
+        phoneNumber: user.phoneNumber
+      });
+
+      // Remove sensitive data
+      const sanitizedUser = {
+        id: user.id,
+        documentId: user.documentId,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        role: user.role
+      };
+
+      return {
+        jwt: token,
+        user: sanitizedUser
+      };
+    } catch (error) {
+      console.error('Attendant login error:', error);
+      return ctx.badRequest(error.message || 'Internal server error');
+    }
+  },
+
+  async changeAttendantPassword(ctx) {
+    try {
+      const { currentPassword, newPassword } = ctx.request.body;
+      const userId = ctx.state.user.id;
+
+      if (!currentPassword || !newPassword) {
+        return ctx.badRequest('Please provide both current and new password');
+      }
+
+      // Find the user
+      const user = await strapi.entityService.findOne('plugin::users-permissions.user', userId, {
+        populate: ['role']
+      });
+
+      if (!user) {
+        return ctx.notFound('User not found');
+      }
+
+      // Verify user is an attendant
+      if (user.role?.name !== 'Attendant') {
+        return ctx.unauthorized('Only attendants can change their password');
+      }
+
+      // Verify current password
+      const validPassword = await strapi.plugins['users-permissions'].services.user.validatePassword(
+        currentPassword,
+        user.password
+      );
+
+      if (!validPassword) {
+        return ctx.unauthorized('Current password is incorrect');
+      }
+
+      // Update password using users-permissions service
+      await strapi.plugins['users-permissions'].services.user.edit(userId, {
+        password: newPassword
+      });
+
+      return {
+        success: true,
+        message: 'Password updated successfully'
+      };
+    } catch (error) {
+      console.error('Change password error:', error);
+      return ctx.badRequest(error.message || 'Internal server error');
+    }
+  }
 }; 
